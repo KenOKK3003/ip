@@ -2,8 +2,8 @@ import java.util.Scanner;
 
 public class Chatterbox {
     static class Task {
-        private String description;
-        private boolean isDone;
+        protected String description;
+        protected boolean isDone;
 
         public Task(String description) {
             this.description = description;
@@ -26,9 +26,64 @@ public class Chatterbox {
             return description;
         }
 
+        public String getTypeIcon() {
+            return "[T]";
+        }
+
         @Override
         public String toString() {
-            return getStatusIcon() + " " + description;
+            return getTypeIcon() + getStatusIcon() + " " + description;
+        }
+    }
+
+    static class ToDo extends Task {
+        public ToDo(String description) {
+            super(description);
+        }
+
+        @Override
+        public String getTypeIcon() {
+            return "[T]";
+        }
+    }
+
+    static class Deadline extends Task {
+        protected String by;
+
+        public Deadline(String description, String by) {
+            super(description);
+            this.by = by;
+        }
+
+        @Override
+        public String getTypeIcon() {
+            return "[D]";
+        }
+
+        @Override
+        public String toString() {
+            return getTypeIcon() + getStatusIcon() + " " + description + " (by: " + by + ")";
+        }
+    }
+
+    static class Event extends Task {
+        protected String from;
+        protected String to;
+
+        public Event(String description, String from, String to) {
+            super(description);
+            this.from = from;
+            this.to = to;
+        }
+
+        @Override
+        public String getTypeIcon() {
+            return "[E]";
+        }
+
+        @Override
+        public String toString() {
+            return getTypeIcon() + getStatusIcon() + " " + description + " (from: " + from + " to: " + to + ")";
         }
     }
 
@@ -75,7 +130,7 @@ public class Chatterbox {
                     if (taskNum > 0 && taskNum <= memoryIndex && memory[taskNum - 1] != null) {
                         memory[taskNum - 1].markAsDone();
                         System.out.println(LINE);
-                        System.out.println(" Nice! I've marked this task as done:");
+                        System.out.println(" Nice! Congrats on finishing this task!");
                         System.out.println("   " + memory[taskNum - 1]);
                         System.out.println(LINE);
                     } else {
@@ -97,7 +152,7 @@ public class Chatterbox {
                     if (taskNum > 0 && taskNum <= memoryIndex && memory[taskNum - 1] != null) {
                         memory[taskNum - 1].markAsNotDone();
                         System.out.println(LINE);
-                        System.out.println(" OK, I've marked this task as not done yet:");
+                        System.out.println(" OK, I've forgotten about it already!");
                         System.out.println("   " + memory[taskNum - 1]);
                         System.out.println(LINE);
                     } else {
@@ -108,6 +163,62 @@ public class Chatterbox {
                 } catch (NumberFormatException e) {
                     System.out.println(LINE);
                     System.out.println(" Please provide a valid task number!");
+                    System.out.println(LINE);
+                }
+                continue;
+            }
+            // Adds a todo task
+            if (input.startsWith("todo ")) {
+                String description = input.substring(5);
+                memory[memoryIndex] = new ToDo(description);
+                System.out.println(LINE);
+                System.out.println(" Got it. I'll make sure you won't forget this task!");
+                System.out.println("   " + memory[memoryIndex]);
+                memoryIndex++;
+                System.out.println(" Now you have " + memoryIndex + " tasks in the list.");
+                System.out.println(LINE);
+                continue;
+            }
+            // Adds a deadline task
+            if (input.startsWith("deadline ")) {
+                String rest = input.substring(9);
+                int byIndex = rest.indexOf("/by ");
+                if (byIndex != -1) {
+                    String description = rest.substring(0, byIndex).trim();
+                    String by = rest.substring(byIndex + 4).trim();
+                    memory[memoryIndex] = new Deadline(description, by);
+                    System.out.println(LINE);
+                    System.out.println(" Got it. Remember to complete this task on time!");
+                    System.out.println("   " + memory[memoryIndex]);
+                    memoryIndex++;
+                    System.out.println(" Now you have " + memoryIndex + " tasks in the list.");
+                    System.out.println(LINE);
+                } else {
+                    System.out.println(LINE);
+                    System.out.println(" Please specify the deadline with /by");
+                    System.out.println(LINE);
+                }
+                continue;
+            }
+            // Adds an event task
+            if (input.startsWith("event ")) {
+                String rest = input.substring(6);
+                int fromIndex = rest.indexOf("/from ");
+                int toIndex = rest.indexOf("/to ");
+                if (fromIndex != -1 && toIndex != -1) {
+                    String description = rest.substring(0, fromIndex).trim();
+                    String from = rest.substring(fromIndex + 6, toIndex).trim();
+                    String to = rest.substring(toIndex + 4).trim();
+                    memory[memoryIndex] = new Event(description, from, to);
+                    System.out.println(LINE);
+                    System.out.println(" Got it. Make sure to attend this event!");
+                    System.out.println("   " + memory[memoryIndex]);
+                    memoryIndex++;
+                    System.out.println(" Now you have " + memoryIndex + " tasks in the list.");
+                    System.out.println(LINE);
+                } else {
+                    System.out.println(LINE);
+                    System.out.println(" Please specify the event time with /from and /to");
                     System.out.println(LINE);
                 }
                 continue;
