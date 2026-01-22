@@ -2,13 +2,31 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Chatterbox {
+    enum TaskType {
+        TODO("[T]"),
+        DEADLINE("[D]"),
+        EVENT("[E]");
+
+        private final String icon;
+
+        TaskType(String icon) {
+            this.icon = icon;
+        }
+
+        public String getIcon() {
+            return icon;
+        }
+    }
+
     static class Task {
         protected String description;
         protected boolean isDone;
+        protected TaskType type;
 
-        public Task(String description) {
+        public Task(String description, TaskType type) {
             this.description = description;
             this.isDone = false;
+            this.type = type;
         }
 
         public void markAsDone() {
@@ -28,7 +46,7 @@ public class Chatterbox {
         }
 
         public String getTypeIcon() {
-            return "[T]";
+            return type.getIcon();
         }
 
         @Override
@@ -39,12 +57,7 @@ public class Chatterbox {
 
     static class ToDo extends Task {
         public ToDo(String description) {
-            super(description);
-        }
-
-        @Override
-        public String getTypeIcon() {
-            return "[T]";
+            super(description, TaskType.TODO);
         }
     }
 
@@ -52,13 +65,8 @@ public class Chatterbox {
         protected String by;
 
         public Deadline(String description, String by) {
-            super(description);
+            super(description, TaskType.DEADLINE);
             this.by = by;
-        }
-
-        @Override
-        public String getTypeIcon() {
-            return "[D]";
         }
 
         @Override
@@ -72,14 +80,9 @@ public class Chatterbox {
         protected String to;
 
         public Event(String description, String from, String to) {
-            super(description);
+            super(description, TaskType.EVENT);
             this.from = from;
             this.to = to;
-        }
-
-        @Override
-        public String getTypeIcon() {
-            return "[E]";
         }
 
         @Override
