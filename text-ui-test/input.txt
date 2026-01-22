@@ -8,4 +8,12 @@ mark 1
 list
 unmark 1
 list
+todo
+blah
+deadline
+event
+mark
+unmark
+deadline test
+event test
 bye

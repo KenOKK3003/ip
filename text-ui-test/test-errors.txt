@@ -1,0 +1,16 @@
+todo
+deadline
+event
+mark
+unmark
+blah
+deadline test
+event test
+deadline test /by
+event test /from Mon
+mark abc
+unmark xyz
+mark 999
+unmark 999
+
+bye

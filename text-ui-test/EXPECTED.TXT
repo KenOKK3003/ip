@@ -57,5 +57,29 @@ ________________________________
  4.[E][ ] project meeting (from: Mon 2pm to: 4pm)
 ________________________________
 ________________________________
+ OOPS!!! The description of a todo cannot be empty.
+________________________________
+________________________________
+ Hmm, I don't recognize that command! Try 'todo', 'deadline', 'event', or 'list'!
+________________________________
+________________________________
+ OOPS!!! The description of a deadline cannot be empty.
+________________________________
+________________________________
+ OOPS!!! The description of an event cannot be empty.
+________________________________
+________________________________
+ OOPS!!! Please specify which task to mark.
+________________________________
+________________________________
+ OOPS!!! Please specify which task to unmark.
+________________________________
+________________________________
+ OOPS!!! Please specify the deadline with /by
+________________________________
+________________________________
+ OOPS!!! Please specify the event time with /from and /to
+________________________________
+________________________________
  Bye! Hope to see you again soon!
 ________________________________

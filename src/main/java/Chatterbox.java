@@ -111,6 +111,13 @@ public class Chatterbox {
                 System.out.println(LINE);
                 break;
             }
+            // Handle empty input
+            if (input.trim().isEmpty()) {
+                System.out.println(LINE);
+                System.out.println(" OOPS!!! Please enter a command.");
+                System.out.println(LINE);
+                continue;
+            }
             // Prints out memory if user types "list"
             if (input.equals("list")) {
                 System.out.println(LINE);
@@ -125,8 +132,14 @@ public class Chatterbox {
             }
             // Marks task as done
             if (input.startsWith("mark ")) {
+                if (input.substring(5).trim().isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! Please specify which task to mark.");
+                    System.out.println(LINE);
+                    continue;
+                }
                 try {
-                    int taskNum = Integer.parseInt(input.substring(5));
+                    int taskNum = Integer.parseInt(input.substring(5).trim());
                     if (taskNum > 0 && taskNum <= memoryIndex && memory[taskNum - 1] != null) {
                         memory[taskNum - 1].markAsDone();
                         System.out.println(LINE);
@@ -135,20 +148,33 @@ public class Chatterbox {
                         System.out.println(LINE);
                     } else {
                         System.out.println(LINE);
-                        System.out.println(" Invalid task number!");
+                        System.out.println(" OOPS!!! Task number " + taskNum + " does not exist.");
                         System.out.println(LINE);
                     }
                 } catch (NumberFormatException e) {
                     System.out.println(LINE);
-                    System.out.println(" Please provide a valid task number!");
+                    System.out.println(" OOPS!!! Please provide a valid task number.");
                     System.out.println(LINE);
                 }
                 continue;
             }
+            // Handle just "mark" without number
+            if (input.equals("mark")) {
+                System.out.println(LINE);
+                System.out.println(" OOPS!!! Please specify which task to mark.");
+                System.out.println(LINE);
+                continue;
+            }
             // Marks task as not done
             if (input.startsWith("unmark ")) {
+                if (input.substring(7).trim().isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! Please specify which task to unmark.");
+                    System.out.println(LINE);
+                    continue;
+                }
                 try {
-                    int taskNum = Integer.parseInt(input.substring(7));
+                    int taskNum = Integer.parseInt(input.substring(7).trim());
                     if (taskNum > 0 && taskNum <= memoryIndex && memory[taskNum - 1] != null) {
                         memory[taskNum - 1].markAsNotDone();
                         System.out.println(LINE);
@@ -157,19 +183,32 @@ public class Chatterbox {
                         System.out.println(LINE);
                     } else {
                         System.out.println(LINE);
-                        System.out.println(" Invalid task number!");
+                        System.out.println(" OOPS!!! Task number " + taskNum + " does not exist.");
                         System.out.println(LINE);
                     }
                 } catch (NumberFormatException e) {
                     System.out.println(LINE);
-                    System.out.println(" Please provide a valid task number!");
+                    System.out.println(" OOPS!!! Please provide a valid task number.");
                     System.out.println(LINE);
                 }
                 continue;
             }
+            // Handle just "unmark" without number
+            if (input.equals("unmark")) {
+                System.out.println(LINE);
+                System.out.println(" OOPS!!! Please specify which task to unmark.");
+                System.out.println(LINE);
+                continue;
+            }
             // Adds a todo task
             if (input.startsWith("todo ")) {
-                String description = input.substring(5);
+                String description = input.substring(5).trim();
+                if (description.isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! The description of a todo cannot be empty.");
+                    System.out.println(LINE);
+                    continue;
+                }
                 memory[memoryIndex] = new ToDo(description);
                 System.out.println(LINE);
                 System.out.println(" Got it. I'll make sure you won't forget this task!");
@@ -179,56 +218,111 @@ public class Chatterbox {
                 System.out.println(LINE);
                 continue;
             }
+            // Handle just "todo" without description
+            if (input.equals("todo")) {
+                System.out.println(LINE);
+                System.out.println(" OOPS!!! The description of a todo cannot be empty.");
+                System.out.println(LINE);
+                continue;
+            }
             // Adds a deadline task
             if (input.startsWith("deadline ")) {
-                String rest = input.substring(9);
-                int byIndex = rest.indexOf("/by ");
-                if (byIndex != -1) {
-                    String description = rest.substring(0, byIndex).trim();
-                    String by = rest.substring(byIndex + 4).trim();
-                    memory[memoryIndex] = new Deadline(description, by);
+                String rest = input.substring(9).trim();
+                if (rest.isEmpty()) {
                     System.out.println(LINE);
-                    System.out.println(" Got it. Remember to complete this task on time!");
-                    System.out.println("   " + memory[memoryIndex]);
-                    memoryIndex++;
-                    System.out.println(" Now you have " + memoryIndex + " tasks in the list.");
+                    System.out.println(" OOPS!!! The description of a deadline cannot be empty.");
                     System.out.println(LINE);
-                } else {
-                    System.out.println(LINE);
-                    System.out.println(" Please specify the deadline with /by");
-                    System.out.println(LINE);
+                    continue;
                 }
+                int byIndex = rest.indexOf("/by ");
+                if (byIndex == -1) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! Please specify the deadline with /by");
+                    System.out.println(LINE);
+                    continue;
+                }
+                String description = rest.substring(0, byIndex).trim();
+                String by = rest.substring(byIndex + 4).trim();
+                if (description.isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! The description of a deadline cannot be empty.");
+                    System.out.println(LINE);
+                    continue;
+                }
+                if (by.isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! The deadline date/time cannot be empty.");
+                    System.out.println(LINE);
+                    continue;
+                }
+                memory[memoryIndex] = new Deadline(description, by);
+                System.out.println(LINE);
+                System.out.println(" Got it. Remember to complete this task on time!");
+                System.out.println("   " + memory[memoryIndex]);
+                memoryIndex++;
+                System.out.println(" Now you have " + memoryIndex + " tasks in the list.");
+                System.out.println(LINE);
+                continue;
+            }
+            // Handle just "deadline" without description
+            if (input.equals("deadline")) {
+                System.out.println(LINE);
+                System.out.println(" OOPS!!! The description of a deadline cannot be empty.");
+                System.out.println(LINE);
                 continue;
             }
             // Adds an event task
             if (input.startsWith("event ")) {
-                String rest = input.substring(6);
+                String rest = input.substring(6).trim();
+                if (rest.isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! The description of an event cannot be empty.");
+                    System.out.println(LINE);
+                    continue;
+                }
                 int fromIndex = rest.indexOf("/from ");
                 int toIndex = rest.indexOf("/to ");
-                if (fromIndex != -1 && toIndex != -1) {
-                    String description = rest.substring(0, fromIndex).trim();
-                    String from = rest.substring(fromIndex + 6, toIndex).trim();
-                    String to = rest.substring(toIndex + 4).trim();
-                    memory[memoryIndex] = new Event(description, from, to);
+                if (fromIndex == -1 || toIndex == -1) {
                     System.out.println(LINE);
-                    System.out.println(" Got it. Make sure to attend this event!");
-                    System.out.println("   " + memory[memoryIndex]);
-                    memoryIndex++;
-                    System.out.println(" Now you have " + memoryIndex + " tasks in the list.");
+                    System.out.println(" OOPS!!! Please specify the event time with /from and /to");
                     System.out.println(LINE);
-                } else {
-                    System.out.println(LINE);
-                    System.out.println(" Please specify the event time with /from and /to");
-                    System.out.println(LINE);
+                    continue;
                 }
+                String description = rest.substring(0, fromIndex).trim();
+                String from = rest.substring(fromIndex + 6, toIndex).trim();
+                String to = rest.substring(toIndex + 4).trim();
+                if (description.isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! The description of an event cannot be empty.");
+                    System.out.println(LINE);
+                    continue;
+                }
+                if (from.isEmpty() || to.isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! The event time cannot be empty.");
+                    System.out.println(LINE);
+                    continue;
+                }
+                memory[memoryIndex] = new Event(description, from, to);
+                System.out.println(LINE);
+                System.out.println(" Got it. Make sure to attend this event!");
+                System.out.println("   " + memory[memoryIndex]);
+                memoryIndex++;
+                System.out.println(" Now you have " + memoryIndex + " tasks in the list.");
+                System.out.println(LINE);
                 continue;
             }
-            // Stores input in memory
-            memory[memoryIndex] = new Task(input);
+            // Handle just "event" without description
+            if (input.equals("event")) {
+                System.out.println(LINE);
+                System.out.println(" OOPS!!! The description of an event cannot be empty.");
+                System.out.println(LINE);
+                continue;
+            }
+            // Unknown command - show error
             System.out.println(LINE);
-            System.out.print("added " + input + "\n");
+            System.out.println(" Hmm, I don't recognize that command! Try 'todo', 'deadline', 'event', or 'list'!");
             System.out.println(LINE);
-            memoryIndex++;
         }
         scanner.close();
     }
