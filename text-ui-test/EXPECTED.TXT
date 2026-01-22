@@ -57,6 +57,17 @@ ________________________________
  4.[E][ ] project meeting (from: Mon 2pm to: 4pm)
 ________________________________
 ________________________________
+ Noted. I've removed this task:
+   [D][ ] submit assignment (by: Sunday)
+ Now you have 3 tasks in the list.
+________________________________
+________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] read book
+ 2.[T][ ] return book
+ 3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+________________________________
+________________________________
  OOPS!!! The description of a todo cannot be empty.
 ________________________________
 ________________________________
@@ -75,10 +86,10 @@ ________________________________
  OOPS!!! Please specify which task to unmark.
 ________________________________
 ________________________________
- OOPS!!! Please specify the deadline with /by
+ OOPS!!! Please specify which task to delete.
 ________________________________
 ________________________________
- OOPS!!! Please specify the event time with /from and /to
+ OOPS!!! Task number 999 does not exist.
 ________________________________
 ________________________________
  Bye! Hope to see you again soon!

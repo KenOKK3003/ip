@@ -8,12 +8,14 @@ mark 1
 list
 unmark 1
 list
+delete 3
+list
 todo
 blah
 deadline
 event
 mark
 unmark
-deadline test
-event test
+delete
+delete 999
 bye

@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Chatterbox {
@@ -99,8 +100,7 @@ public class Chatterbox {
 
         Scanner scanner = new Scanner(System.in);
         String input;
-        Task[] memory = new Task[100];
-        int memoryIndex = 0;
+        ArrayList<Task> tasks = new ArrayList<>();
         
         while (true) {
             input = scanner.nextLine();
@@ -122,10 +122,8 @@ public class Chatterbox {
             if (input.equals("list")) {
                 System.out.println(LINE);
                 System.out.println(" Here are the tasks in your list:");
-                for (int i = 0; i < memory.length; i++) {
-                    if (memory[i] != null) {
-                        System.out.println(" " + (i + 1) + "." + memory[i]);
-                    }
+                for (int i = 0; i < tasks.size(); i++) {
+                    System.out.println(" " + (i + 1) + "." + tasks.get(i));
                 }
                 System.out.println(LINE);
                 continue;
@@ -140,11 +138,11 @@ public class Chatterbox {
                 }
                 try {
                     int taskNum = Integer.parseInt(input.substring(5).trim());
-                    if (taskNum > 0 && taskNum <= memoryIndex && memory[taskNum - 1] != null) {
-                        memory[taskNum - 1].markAsDone();
+                    if (taskNum > 0 && taskNum <= tasks.size()) {
+                        tasks.get(taskNum - 1).markAsDone();
                         System.out.println(LINE);
                         System.out.println(" Nice! Congrats on finishing this task!");
-                        System.out.println("   " + memory[taskNum - 1]);
+                        System.out.println("   " + tasks.get(taskNum - 1));
                         System.out.println(LINE);
                     } else {
                         System.out.println(LINE);
@@ -175,11 +173,11 @@ public class Chatterbox {
                 }
                 try {
                     int taskNum = Integer.parseInt(input.substring(7).trim());
-                    if (taskNum > 0 && taskNum <= memoryIndex && memory[taskNum - 1] != null) {
-                        memory[taskNum - 1].markAsNotDone();
+                    if (taskNum > 0 && taskNum <= tasks.size()) {
+                        tasks.get(taskNum - 1).markAsNotDone();
                         System.out.println(LINE);
                         System.out.println(" OK, I've forgotten about it already!");
-                        System.out.println("   " + memory[taskNum - 1]);
+                        System.out.println("   " + tasks.get(taskNum - 1));
                         System.out.println(LINE);
                     } else {
                         System.out.println(LINE);
@@ -200,6 +198,42 @@ public class Chatterbox {
                 System.out.println(LINE);
                 continue;
             }
+            // Deletes a task
+            if (input.startsWith("delete ")) {
+                if (input.substring(7).trim().isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! Please specify which task to delete.");
+                    System.out.println(LINE);
+                    continue;
+                }
+                try {
+                    int taskNum = Integer.parseInt(input.substring(7).trim());
+                    if (taskNum > 0 && taskNum <= tasks.size()) {
+                        Task removedTask = tasks.remove(taskNum - 1);
+                        System.out.println(LINE);
+                        System.out.println(" Noted. I've removed this task:");
+                        System.out.println("   " + removedTask);
+                        System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
+                        System.out.println(LINE);
+                    } else {
+                        System.out.println(LINE);
+                        System.out.println(" OOPS!!! Task number " + taskNum + " does not exist.");
+                        System.out.println(LINE);
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! Please provide a valid task number.");
+                    System.out.println(LINE);
+                }
+                continue;
+            }
+            // Handle just "delete" without number
+            if (input.equals("delete")) {
+                System.out.println(LINE);
+                System.out.println(" OOPS!!! Please specify which task to delete.");
+                System.out.println(LINE);
+                continue;
+            }
             // Adds a todo task
             if (input.startsWith("todo ")) {
                 String description = input.substring(5).trim();
@@ -209,12 +243,12 @@ public class Chatterbox {
                     System.out.println(LINE);
                     continue;
                 }
-                memory[memoryIndex] = new ToDo(description);
+                Task newTask = new ToDo(description);
+                tasks.add(newTask);
                 System.out.println(LINE);
                 System.out.println(" Got it. I'll make sure you won't forget this task!");
-                System.out.println("   " + memory[memoryIndex]);
-                memoryIndex++;
-                System.out.println(" Now you have " + memoryIndex + " tasks in the list.");
+                System.out.println("   " + newTask);
+                System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
                 System.out.println(LINE);
                 continue;
             }
@@ -255,12 +289,12 @@ public class Chatterbox {
                     System.out.println(LINE);
                     continue;
                 }
-                memory[memoryIndex] = new Deadline(description, by);
+                Task newTask = new Deadline(description, by);
+                tasks.add(newTask);
                 System.out.println(LINE);
                 System.out.println(" Got it. Remember to complete this task on time!");
-                System.out.println("   " + memory[memoryIndex]);
-                memoryIndex++;
-                System.out.println(" Now you have " + memoryIndex + " tasks in the list.");
+                System.out.println("   " + newTask);
+                System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
                 System.out.println(LINE);
                 continue;
             }
@@ -303,12 +337,12 @@ public class Chatterbox {
                     System.out.println(LINE);
                     continue;
                 }
-                memory[memoryIndex] = new Event(description, from, to);
+                Task newTask = new Event(description, from, to);
+                tasks.add(newTask);
                 System.out.println(LINE);
                 System.out.println(" Got it. Make sure to attend this event!");
-                System.out.println("   " + memory[memoryIndex]);
-                memoryIndex++;
-                System.out.println(" Now you have " + memoryIndex + " tasks in the list.");
+                System.out.println("   " + newTask);
+                System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
                 System.out.println(LINE);
                 continue;
             }

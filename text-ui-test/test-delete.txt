@@ -1,0 +1,8 @@
+todo buy groceries
+todo clean room
+deadline project report /by Friday
+event team meeting /from 2pm /to 3pm
+list
+delete 2
+list
+bye
