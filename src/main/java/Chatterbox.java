@@ -115,6 +115,7 @@ public class Chatterbox {
                 break;
             }
             // Handle empty input
+            
             if (input.trim().isEmpty()) {
                 System.out.println(LINE);
                 System.out.println(" OOPS!!! Please enter a command.");
