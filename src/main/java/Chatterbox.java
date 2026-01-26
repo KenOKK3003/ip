@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -11,6 +14,16 @@ public class Chatterbox {
     // File paths
     private static final String DATA_DIR = "./data";
     private static final String DATA_FILE = DATA_DIR + "/chatterbox.txt";
+    
+    // Date/time formatters
+    private static final DateTimeFormatter INPUT_DATE_FORMATTER = 
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+    private static final DateTimeFormatter DISPLAY_DATE_FORMATTER = 
+        DateTimeFormatter.ofPattern("MMM dd yyyy, h:mm a");
+    private static final DateTimeFormatter FILE_DATE_FORMATTER = 
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+    private static final DateTimeFormatter DATE_ONLY_FORMATTER = 
+        DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
     enum TaskType {
         TODO("T"),
@@ -81,6 +94,10 @@ public class Chatterbox {
         public String toFileFormat() {
             return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description;
         }
+        
+        public LocalDateTime getDateTime() {
+            return null; // Base task has no date/time
+        }
 
         @Override
         public String toString() {
@@ -104,53 +121,102 @@ public class Chatterbox {
     }
 
     static class Deadline extends Task {
-        protected String by;
+        protected LocalDateTime by;
 
-        public Deadline(String description, String by) {
+        public Deadline(String description, LocalDateTime by) {
             super(description, TaskType.DEADLINE);
             this.by = by;
         }
         
-        public Deadline(String description, String by, boolean isDone) {
+        public Deadline(String description, LocalDateTime by, boolean isDone) {
             super(description, TaskType.DEADLINE, isDone);
             this.by = by;
+        }
+        
+        @Override
+        public LocalDateTime getDateTime() {
+            return by;
         }
 
         @Override
         public String toString() {
-            return getTypeIcon() + getStatusIcon() + " " + description + " (by: " + by + ")";
+            return getTypeIcon() + getStatusIcon() + " " + description + 
+                   " (by: " + by.format(DISPLAY_DATE_FORMATTER) + ")";
         }
         
         @Override
         public String toFileFormat() {
-            return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description + " | " + by;
+            return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description + 
+                   " | " + by.format(FILE_DATE_FORMATTER);
         }
     }
 
     static class Event extends Task {
-        protected String from;
-        protected String to;
+        protected LocalDateTime from;
+        protected LocalDateTime to;
 
-        public Event(String description, String from, String to) {
+        public Event(String description, LocalDateTime from, LocalDateTime to) {
             super(description, TaskType.EVENT);
             this.from = from;
             this.to = to;
         }
         
-        public Event(String description, String from, String to, boolean isDone) {
+        public Event(String description, LocalDateTime from, LocalDateTime to, boolean isDone) {
             super(description, TaskType.EVENT, isDone);
             this.from = from;
             this.to = to;
         }
+        
+        @Override
+        public LocalDateTime getDateTime() {
+            return from; // Return start time for event
+        }
 
         @Override
         public String toString() {
-            return getTypeIcon() + getStatusIcon() + " " + description + " (from: " + from + " to: " + to + ")";
+            return getTypeIcon() + getStatusIcon() + " " + description + 
+                   " (from: " + from.format(DISPLAY_DATE_FORMATTER) + 
+                   " to: " + to.format(DISPLAY_DATE_FORMATTER) + ")";
         }
         
         @Override
         public String toFileFormat() {
-            return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description + " | " + from + " | " + to;
+            return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description + 
+                   " | " + from.format(FILE_DATE_FORMATTER) + 
+                   " | " + to.format(FILE_DATE_FORMATTER);
+        }
+    }
+    
+    /**
+     * Parses a date-time string in the format "yyyy-MM-dd HHmm"
+     */
+    private static LocalDateTime parseDateTime(String dateTimeStr) throws DateTimeParseException {
+        return LocalDateTime.parse(dateTimeStr, INPUT_DATE_FORMATTER);
+    }
+    
+    /**
+     * Parses a date-only string in the format "yyyy-MM-dd"
+     */
+    private static LocalDateTime parseDate(String dateStr) throws DateTimeParseException {
+        return LocalDateTime.parse(dateStr + " 0000", INPUT_DATE_FORMATTER);
+    }
+    
+    /**
+     * Tries multiple date formats to parse the input
+     */
+    private static LocalDateTime parseFlexibleDateTime(String dateTimeStr) {
+        // Try full date-time format first
+        try {
+            return parseDateTime(dateTimeStr);
+        } catch (DateTimeParseException e1) {
+            // Try date-only format
+            try {
+                return parseDate(dateTimeStr);
+            } catch (DateTimeParseException e2) {
+                throw new DateTimeParseException(
+                    "Invalid date format. Please use yyyy-MM-dd HHmm (e.g., 2019-12-02 1800) " +
+                    "or yyyy-MM-dd (e.g., 2019-12-02)", dateTimeStr, 0);
+            }
         }
     }
     
@@ -235,20 +301,25 @@ public class Chatterbox {
                 if (parts.length < 4) {
                     throw new IllegalArgumentException("Deadline missing 'by' field: " + line);
                 }
-                String by = parts[3].trim();
+                String byStr = parts[3].trim();
+                LocalDateTime by = LocalDateTime.parse(byStr, FILE_DATE_FORMATTER);
                 return new Deadline(description, by, isDone);
                 
             case EVENT:
                 if (parts.length < 5) {
                     throw new IllegalArgumentException("Event missing 'from' or 'to' field: " + line);
                 }
-                String from = parts[3].trim();
-                String to = parts[4].trim();
+                String fromStr = parts[3].trim();
+                String toStr = parts[4].trim();
+                LocalDateTime from = LocalDateTime.parse(fromStr, FILE_DATE_FORMATTER);
+                LocalDateTime to = LocalDateTime.parse(toStr, FILE_DATE_FORMATTER);
                 return new Event(description, from, to, isDone);
                 
             default:
                 throw new IllegalArgumentException("Unknown task type: " + typeStr);
             }
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid date format in: " + line, e);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Failed to parse task: " + line, e);
         }
@@ -278,6 +349,31 @@ public class Chatterbox {
         } catch (IOException e) {
             System.err.println("Error saving tasks: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Finds tasks occurring on a specific date
+     */
+    private static ArrayList<Task> findTasksOnDate(ArrayList<Task> tasks, LocalDateTime date) {
+        ArrayList<Task> result = new ArrayList<>();
+        
+        for (Task task : tasks) {
+            if (task instanceof Deadline) {
+                Deadline deadline = (Deadline) task;
+                if (deadline.by.toLocalDate().equals(date.toLocalDate())) {
+                    result.add(task);
+                }
+            } else if (task instanceof Event) {
+                Event event = (Event) task;
+                // Check if the event occurs on the given date
+                if (!event.from.toLocalDate().isAfter(date.toLocalDate()) && 
+                    !event.to.toLocalDate().isBefore(date.toLocalDate())) {
+                    result.add(task);
+                }
+            }
+        }
+        
+        return result;
     }
 
     public static void main(String[] args) {
@@ -326,6 +422,37 @@ public class Chatterbox {
                     System.out.println(" " + (i + 1) + "." + tasks.get(i));
                 }
                 System.out.println(LINE);
+                continue;
+            }
+            
+            // Find tasks on specific date
+            if (input.startsWith("finddate ")) {
+                String dateStr = input.substring(9).trim();
+                if (dateStr.isEmpty()) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! Please specify a date (yyyy-MM-dd).");
+                    System.out.println(LINE);
+                    continue;
+                }
+                try {
+                    LocalDateTime date = parseDate(dateStr);
+                    ArrayList<Task> foundTasks = findTasksOnDate(tasks, date);
+                    
+                    System.out.println(LINE);
+                    System.out.println(" Tasks on " + date.format(DATE_ONLY_FORMATTER) + ":");
+                    if (foundTasks.isEmpty()) {
+                        System.out.println(" No tasks found for this date.");
+                    } else {
+                        for (int i = 0; i < foundTasks.size(); i++) {
+                            System.out.println(" " + (i + 1) + "." + foundTasks.get(i));
+                        }
+                    }
+                    System.out.println(LINE);
+                } catch (DateTimeParseException e) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! Invalid date format. Please use yyyy-MM-dd (e.g., 2019-12-02)");
+                    System.out.println(LINE);
+                }
                 continue;
             }
             
@@ -473,27 +600,34 @@ public class Chatterbox {
                     continue;
                 }
                 String description = rest.substring(0, byIndex).trim();
-                String by = rest.substring(byIndex + 4).trim();
+                String byStr = rest.substring(byIndex + 4).trim();
                 if (description.isEmpty()) {
                     System.out.println(LINE);
                     System.out.println(" OOPS!!! The description of a deadline cannot be empty.");
                     System.out.println(LINE);
                     continue;
                 }
-                if (by.isEmpty()) {
+                if (byStr.isEmpty()) {
                     System.out.println(LINE);
                     System.out.println(" OOPS!!! The deadline date/time cannot be empty.");
                     System.out.println(LINE);
                     continue;
                 }
-                Task newTask = new Deadline(description, by);
-                tasks.add(newTask);
-                tasksChanged = true;
-                System.out.println(LINE);
-                System.out.println(" Got it. Remember to complete this task on time!");
-                System.out.println("   " + newTask);
-                System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
-                System.out.println(LINE);
+                try {
+                    LocalDateTime by = parseFlexibleDateTime(byStr);
+                    Task newTask = new Deadline(description, by);
+                    tasks.add(newTask);
+                    tasksChanged = true;
+                    System.out.println(LINE);
+                    System.out.println(" Got it. Remember to complete this task on time!");
+                    System.out.println("   " + newTask);
+                    System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
+                    System.out.println(LINE);
+                } catch (DateTimeParseException e) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! " + e.getMessage());
+                    System.out.println(LINE);
+                }
             }
             // Handle just "deadline" without description
             else if (input.equals("deadline")) {
@@ -519,28 +653,45 @@ public class Chatterbox {
                     continue;
                 }
                 String description = rest.substring(0, fromIndex).trim();
-                String from = rest.substring(fromIndex + 6, toIndex).trim();
-                String to = rest.substring(toIndex + 4).trim();
+                String fromStr = rest.substring(fromIndex + 6, toIndex).trim();
+                String toStr = rest.substring(toIndex + 4).trim();
                 if (description.isEmpty()) {
                     System.out.println(LINE);
                     System.out.println(" OOPS!!! The description of an event cannot be empty.");
                     System.out.println(LINE);
                     continue;
                 }
-                if (from.isEmpty() || to.isEmpty()) {
+                if (fromStr.isEmpty() || toStr.isEmpty()) {
                     System.out.println(LINE);
                     System.out.println(" OOPS!!! The event time cannot be empty.");
                     System.out.println(LINE);
                     continue;
                 }
-                Task newTask = new Event(description, from, to);
-                tasks.add(newTask);
-                tasksChanged = true;
-                System.out.println(LINE);
-                System.out.println(" Got it. Make sure to attend this event!");
-                System.out.println("   " + newTask);
-                System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
-                System.out.println(LINE);
+                try {
+                    LocalDateTime from = parseFlexibleDateTime(fromStr);
+                    LocalDateTime to = parseFlexibleDateTime(toStr);
+                    
+                    // Validate that 'to' is after 'from'
+                    if (to.isBefore(from)) {
+                        System.out.println(LINE);
+                        System.out.println(" OOPS!!! The 'to' time must be after the 'from' time.");
+                        System.out.println(LINE);
+                        continue;
+                    }
+                    
+                    Task newTask = new Event(description, from, to);
+                    tasks.add(newTask);
+                    tasksChanged = true;
+                    System.out.println(LINE);
+                    System.out.println(" Got it. Make sure to attend this event!");
+                    System.out.println("   " + newTask);
+                    System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
+                    System.out.println(LINE);
+                } catch (DateTimeParseException e) {
+                    System.out.println(LINE);
+                    System.out.println(" OOPS!!! " + e.getMessage());
+                    System.out.println(LINE);
+                }
             }
             // Handle just "event" without description
             else if (input.equals("event")) {
@@ -551,7 +702,7 @@ public class Chatterbox {
             // Unknown command - show error
             else {
                 System.out.println(LINE);
-                System.out.println(" Hmm, I don't recognize that command! Try 'todo', 'deadline', 'event', or 'list'!");
+                System.out.println(" Hmm, I don't recognize that command! Try 'todo', 'deadline', 'event', 'list', or 'finddate'!");
                 System.out.println(LINE);
             }
             
