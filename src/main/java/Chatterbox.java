@@ -1,11 +1,21 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Chatterbox {
+    // File paths
+    private static final String DATA_DIR = "./data";
+    private static final String DATA_FILE = DATA_DIR + "/chatterbox.txt";
+    
     enum TaskType {
-        TODO("[T]"),
-        DEADLINE("[D]"),
-        EVENT("[E]");
+        TODO("T"),
+        DEADLINE("D"),
+        EVENT("E");
 
         private final String icon;
 
@@ -15,6 +25,19 @@ public class Chatterbox {
 
         public String getIcon() {
             return icon;
+        }
+        
+        public static TaskType fromString(String type) {
+            switch (type) {
+            case "T":
+                return TODO;
+            case "D":
+                return DEADLINE;
+            case "E":
+                return EVENT;
+            default:
+                throw new IllegalArgumentException("Unknown task type: " + type);
+            }
         }
     }
 
@@ -26,6 +49,12 @@ public class Chatterbox {
         public Task(String description, TaskType type) {
             this.description = description;
             this.isDone = false;
+            this.type = type;
+        }
+
+        public Task(String description, TaskType type, boolean isDone) {
+            this.description = description;
+            this.isDone = isDone;
             this.type = type;
         }
 
@@ -46,7 +75,11 @@ public class Chatterbox {
         }
 
         public String getTypeIcon() {
-            return type.getIcon();
+            return "[" + type.getIcon() + "]";
+        }
+        
+        public String toFileFormat() {
+            return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description;
         }
 
         @Override
@@ -59,6 +92,15 @@ public class Chatterbox {
         public ToDo(String description) {
             super(description, TaskType.TODO);
         }
+        
+        public ToDo(String description, boolean isDone) {
+            super(description, TaskType.TODO, isDone);
+        }
+        
+        @Override
+        public String toFileFormat() {
+            return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description;
+        }
     }
 
     static class Deadline extends Task {
@@ -68,10 +110,20 @@ public class Chatterbox {
             super(description, TaskType.DEADLINE);
             this.by = by;
         }
+        
+        public Deadline(String description, String by, boolean isDone) {
+            super(description, TaskType.DEADLINE, isDone);
+            this.by = by;
+        }
 
         @Override
         public String toString() {
             return getTypeIcon() + getStatusIcon() + " " + description + " (by: " + by + ")";
+        }
+        
+        @Override
+        public String toFileFormat() {
+            return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description + " | " + by;
         }
     }
 
@@ -84,10 +136,147 @@ public class Chatterbox {
             this.from = from;
             this.to = to;
         }
+        
+        public Event(String description, String from, String to, boolean isDone) {
+            super(description, TaskType.EVENT, isDone);
+            this.from = from;
+            this.to = to;
+        }
 
         @Override
         public String toString() {
             return getTypeIcon() + getStatusIcon() + " " + description + " (from: " + from + " to: " + to + ")";
+        }
+        
+        @Override
+        public String toFileFormat() {
+            return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description + " | " + from + " | " + to;
+        }
+    }
+    
+    /**
+     * Loads tasks from the data file.
+     * Creates data directory and file if they don't exist.
+     * 
+     * @return List of loaded tasks
+     */
+    private static ArrayList<Task> loadTasks() {
+        ArrayList<Task> tasks = new ArrayList<>();
+        
+        try {
+            Path dataDirPath = Paths.get(DATA_DIR);
+            Path dataFilePath = Paths.get(DATA_FILE);
+            
+            // Create data directory if it doesn't exist
+            if (!Files.exists(dataDirPath)) {
+                Files.createDirectories(dataDirPath);
+            }
+            
+            // Create data file if it doesn't exist
+            if (!Files.exists(dataFilePath)) {
+                Files.createFile(dataFilePath);
+                return tasks; // Empty list for new file
+            }
+            
+            // Read all lines from file
+            java.util.List<String> lines = Files.readAllLines(dataFilePath);
+            
+            for (String line : lines) {
+                try {
+                    Task task = parseTaskFromFile(line);
+                    if (task != null) {
+                        tasks.add(task);
+                    }
+                } catch (IllegalArgumentException e) {
+                    System.err.println("Warning: Skipping corrupted line: " + line);
+                }
+            }
+            
+        } catch (IOException e) {
+            System.err.println("Error loading tasks: " + e.getMessage());
+        }
+        
+        return tasks;
+    }
+    
+    /**
+     * Parses a single line from the data file into a Task object.
+     * 
+     * @param line The line from the data file
+     * @return Task object, or null if line is empty
+     * @throws IllegalArgumentException if line format is invalid
+     */
+    private static Task parseTaskFromFile(String line) {
+        if (line == null || line.trim().isEmpty()) {
+            return null;
+        }
+        
+        String[] parts = line.split(" \\| ");
+        
+        // Minimum 3 parts: type | status | description
+        if (parts.length < 3) {
+            throw new IllegalArgumentException("Invalid format: " + line);
+        }
+        
+        String typeStr = parts[0].trim();
+        String statusStr = parts[1].trim();
+        String description = parts[2].trim();
+        
+        boolean isDone = statusStr.equals("1");
+        
+        try {
+            TaskType type = TaskType.fromString(typeStr);
+            
+            switch (type) {
+            case TODO:
+                return new ToDo(description, isDone);
+                
+            case DEADLINE:
+                if (parts.length < 4) {
+                    throw new IllegalArgumentException("Deadline missing 'by' field: " + line);
+                }
+                String by = parts[3].trim();
+                return new Deadline(description, by, isDone);
+                
+            case EVENT:
+                if (parts.length < 5) {
+                    throw new IllegalArgumentException("Event missing 'from' or 'to' field: " + line);
+                }
+                String from = parts[3].trim();
+                String to = parts[4].trim();
+                return new Event(description, from, to, isDone);
+                
+            default:
+                throw new IllegalArgumentException("Unknown task type: " + typeStr);
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Failed to parse task: " + line, e);
+        }
+    }
+    
+    /**
+     * Saves all tasks to the data file.
+     * 
+     * @param tasks The list of tasks to save
+     */
+    private static void saveTasks(ArrayList<Task> tasks) {
+        try {
+            // Ensure data directory exists
+            Path dataDirPath = Paths.get(DATA_DIR);
+            if (!Files.exists(dataDirPath)) {
+                Files.createDirectories(dataDirPath);
+            }
+            
+            FileWriter writer = new FileWriter(DATA_FILE);
+            
+            for (Task task : tasks) {
+                writer.write(task.toFileFormat() + System.lineSeparator());
+            }
+            
+            writer.close();
+            
+        } catch (IOException e) {
+            System.err.println("Error saving tasks: " + e.getMessage());
         }
     }
 
@@ -103,10 +292,16 @@ public class Chatterbox {
 
         Scanner scanner = new Scanner(System.in);
         String input;
-        ArrayList<Task> tasks = new ArrayList<>();
+        
+        // Load tasks from file
+        ArrayList<Task> tasks = loadTasks();
+        System.out.println(" Loaded " + tasks.size() + " tasks from memory.");
+        System.out.println(LINE);
         
         while (true) {
             input = scanner.nextLine();
+            boolean tasksChanged = false;
+            
             // Exits if user types "bye"
             if (input.equals("bye")) {
                 System.out.println(LINE);
@@ -114,14 +309,15 @@ public class Chatterbox {
                 System.out.println(LINE);
                 break;
             }
-            // Handle empty input
             
+            // Handle empty input
             if (input.trim().isEmpty()) {
                 System.out.println(LINE);
                 System.out.println(" OOPS!!! Please enter a command.");
                 System.out.println(LINE);
                 continue;
             }
+            
             // Prints out memory if user types "list"
             if (input.equals("list")) {
                 System.out.println(LINE);
@@ -132,6 +328,7 @@ public class Chatterbox {
                 System.out.println(LINE);
                 continue;
             }
+            
             // Marks task as done
             if (input.startsWith("mark ")) {
                 if (input.substring(5).trim().isEmpty()) {
@@ -144,6 +341,7 @@ public class Chatterbox {
                     int taskNum = Integer.parseInt(input.substring(5).trim());
                     if (taskNum > 0 && taskNum <= tasks.size()) {
                         tasks.get(taskNum - 1).markAsDone();
+                        tasksChanged = true;
                         System.out.println(LINE);
                         System.out.println(" Nice! Congrats on finishing this task!");
                         System.out.println("   " + tasks.get(taskNum - 1));
@@ -158,17 +356,15 @@ public class Chatterbox {
                     System.out.println(" OOPS!!! Please provide a valid task number.");
                     System.out.println(LINE);
                 }
-                continue;
             }
             // Handle just "mark" without number
-            if (input.equals("mark")) {
+            else if (input.equals("mark")) {
                 System.out.println(LINE);
                 System.out.println(" OOPS!!! Please specify which task to mark.");
                 System.out.println(LINE);
-                continue;
             }
             // Marks task as not done
-            if (input.startsWith("unmark ")) {
+            else if (input.startsWith("unmark ")) {
                 if (input.substring(7).trim().isEmpty()) {
                     System.out.println(LINE);
                     System.out.println(" OOPS!!! Please specify which task to unmark.");
@@ -179,6 +375,7 @@ public class Chatterbox {
                     int taskNum = Integer.parseInt(input.substring(7).trim());
                     if (taskNum > 0 && taskNum <= tasks.size()) {
                         tasks.get(taskNum - 1).markAsNotDone();
+                        tasksChanged = true;
                         System.out.println(LINE);
                         System.out.println(" OK, I've forgotten about it already!");
                         System.out.println("   " + tasks.get(taskNum - 1));
@@ -193,17 +390,15 @@ public class Chatterbox {
                     System.out.println(" OOPS!!! Please provide a valid task number.");
                     System.out.println(LINE);
                 }
-                continue;
             }
             // Handle just "unmark" without number
-            if (input.equals("unmark")) {
+            else if (input.equals("unmark")) {
                 System.out.println(LINE);
                 System.out.println(" OOPS!!! Please specify which task to unmark.");
                 System.out.println(LINE);
-                continue;
             }
             // Deletes a task
-            if (input.startsWith("delete ")) {
+            else if (input.startsWith("delete ")) {
                 if (input.substring(7).trim().isEmpty()) {
                     System.out.println(LINE);
                     System.out.println(" OOPS!!! Please specify which task to delete.");
@@ -214,6 +409,7 @@ public class Chatterbox {
                     int taskNum = Integer.parseInt(input.substring(7).trim());
                     if (taskNum > 0 && taskNum <= tasks.size()) {
                         Task removedTask = tasks.remove(taskNum - 1);
+                        tasksChanged = true;
                         System.out.println(LINE);
                         System.out.println(" Noted. I've removed this task:");
                         System.out.println("   " + removedTask);
@@ -229,17 +425,15 @@ public class Chatterbox {
                     System.out.println(" OOPS!!! Please provide a valid task number.");
                     System.out.println(LINE);
                 }
-                continue;
             }
             // Handle just "delete" without number
-            if (input.equals("delete")) {
+            else if (input.equals("delete")) {
                 System.out.println(LINE);
                 System.out.println(" OOPS!!! Please specify which task to delete.");
                 System.out.println(LINE);
-                continue;
             }
             // Adds a todo task
-            if (input.startsWith("todo ")) {
+            else if (input.startsWith("todo ")) {
                 String description = input.substring(5).trim();
                 if (description.isEmpty()) {
                     System.out.println(LINE);
@@ -249,22 +443,21 @@ public class Chatterbox {
                 }
                 Task newTask = new ToDo(description);
                 tasks.add(newTask);
+                tasksChanged = true;
                 System.out.println(LINE);
                 System.out.println(" Got it. I'll make sure you won't forget this task!");
                 System.out.println("   " + newTask);
                 System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
                 System.out.println(LINE);
-                continue;
             }
             // Handle just "todo" without description
-            if (input.equals("todo")) {
+            else if (input.equals("todo")) {
                 System.out.println(LINE);
                 System.out.println(" OOPS!!! The description of a todo cannot be empty.");
                 System.out.println(LINE);
-                continue;
             }
             // Adds a deadline task
-            if (input.startsWith("deadline ")) {
+            else if (input.startsWith("deadline ")) {
                 String rest = input.substring(9).trim();
                 if (rest.isEmpty()) {
                     System.out.println(LINE);
@@ -295,22 +488,21 @@ public class Chatterbox {
                 }
                 Task newTask = new Deadline(description, by);
                 tasks.add(newTask);
+                tasksChanged = true;
                 System.out.println(LINE);
                 System.out.println(" Got it. Remember to complete this task on time!");
                 System.out.println("   " + newTask);
                 System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
                 System.out.println(LINE);
-                continue;
             }
             // Handle just "deadline" without description
-            if (input.equals("deadline")) {
+            else if (input.equals("deadline")) {
                 System.out.println(LINE);
                 System.out.println(" OOPS!!! The description of a deadline cannot be empty.");
                 System.out.println(LINE);
-                continue;
             }
             // Adds an event task
-            if (input.startsWith("event ")) {
+            else if (input.startsWith("event ")) {
                 String rest = input.substring(6).trim();
                 if (rest.isEmpty()) {
                     System.out.println(LINE);
@@ -343,24 +535,30 @@ public class Chatterbox {
                 }
                 Task newTask = new Event(description, from, to);
                 tasks.add(newTask);
+                tasksChanged = true;
                 System.out.println(LINE);
                 System.out.println(" Got it. Make sure to attend this event!");
                 System.out.println("   " + newTask);
                 System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
                 System.out.println(LINE);
-                continue;
             }
             // Handle just "event" without description
-            if (input.equals("event")) {
+            else if (input.equals("event")) {
                 System.out.println(LINE);
                 System.out.println(" OOPS!!! The description of an event cannot be empty.");
                 System.out.println(LINE);
-                continue;
             }
             // Unknown command - show error
-            System.out.println(LINE);
-            System.out.println(" Hmm, I don't recognize that command! Try 'todo', 'deadline', 'event', or 'list'!");
-            System.out.println(LINE);
+            else {
+                System.out.println(LINE);
+                System.out.println(" Hmm, I don't recognize that command! Try 'todo', 'deadline', 'event', or 'list'!");
+                System.out.println(LINE);
+            }
+            
+            // Save tasks if they were modified
+            if (tasksChanged) {
+                saveTasks(tasks);
+            }
         }
         scanner.close();
     }
