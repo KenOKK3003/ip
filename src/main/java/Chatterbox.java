@@ -1,4 +1,4 @@
-import java.io.File;
+// chatterbox_single_file.java
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,21 +10,15 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Chatterbox {
-    // File paths
-    private static final String DATA_DIR = "./data";
-    private static final String DATA_FILE = DATA_DIR + "/chatterbox.txt";
-    
-    // Date/time formatters
-    private static final DateTimeFormatter INPUT_DATE_FORMATTER = 
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
-    private static final DateTimeFormatter DISPLAY_DATE_FORMATTER = 
-        DateTimeFormatter.ofPattern("MMM dd yyyy, h:mm a");
-    private static final DateTimeFormatter FILE_DATE_FORMATTER = 
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
-    private static final DateTimeFormatter DATE_ONLY_FORMATTER = 
-        DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    
+// ==================== ChatterboxException ====================
+class ChatterboxException extends Exception {
+    public ChatterboxException(String message) {
+        super(message);
+    }
+}
+
+// ==================== Task Classes ====================
+abstract class Task {
     enum TaskType {
         TODO("T"),
         DEADLINE("D"),
@@ -53,188 +47,322 @@ public class Chatterbox {
             }
         }
     }
+    
+    protected String description;
+    protected boolean isDone;
+    protected TaskType type;
+    protected static final DateTimeFormatter DISPLAY_DATE_FORMATTER = 
+        DateTimeFormatter.ofPattern("MMM dd yyyy, h:mm a");
+    protected static final DateTimeFormatter FILE_DATE_FORMATTER = 
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
 
-    static class Task {
-        protected String description;
-        protected boolean isDone;
-        protected TaskType type;
-
-        public Task(String description, TaskType type) {
-            this.description = description;
-            this.isDone = false;
-            this.type = type;
-        }
-
-        public Task(String description, TaskType type, boolean isDone) {
-            this.description = description;
-            this.isDone = isDone;
-            this.type = type;
-        }
-
-        public void markAsDone() {
-            this.isDone = true;
-        }
-
-        public void markAsNotDone() {
-            this.isDone = false;
-        }
-
-        public String getStatusIcon() {
-            return (isDone ? "[X]" : "[ ]");
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public String getTypeIcon() {
-            return "[" + type.getIcon() + "]";
-        }
-        
-        public String toFileFormat() {
-            return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description;
-        }
-        
-        public LocalDateTime getDateTime() {
-            return null; // Base task has no date/time
-        }
-
-        @Override
-        public String toString() {
-            return getTypeIcon() + getStatusIcon() + " " + description;
-        }
+    public Task(String description, TaskType type) {
+        this.description = description;
+        this.isDone = false;
+        this.type = type;
     }
 
-    static class ToDo extends Task {
-        public ToDo(String description) {
-            super(description, TaskType.TODO);
-        }
-        
-        public ToDo(String description, boolean isDone) {
-            super(description, TaskType.TODO, isDone);
-        }
-        
-        @Override
-        public String toFileFormat() {
-            return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description;
-        }
+    public Task(String description, TaskType type, boolean isDone) {
+        this.description = description;
+        this.isDone = isDone;
+        this.type = type;
     }
 
-    static class Deadline extends Task {
-        protected LocalDateTime by;
-
-        public Deadline(String description, LocalDateTime by) {
-            super(description, TaskType.DEADLINE);
-            this.by = by;
-        }
-        
-        public Deadline(String description, LocalDateTime by, boolean isDone) {
-            super(description, TaskType.DEADLINE, isDone);
-            this.by = by;
-        }
-        
-        @Override
-        public LocalDateTime getDateTime() {
-            return by;
-        }
-
-        @Override
-        public String toString() {
-            return getTypeIcon() + getStatusIcon() + " " + description + 
-                   " (by: " + by.format(DISPLAY_DATE_FORMATTER) + ")";
-        }
-        
-        @Override
-        public String toFileFormat() {
-            return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description + 
-                   " | " + by.format(FILE_DATE_FORMATTER);
-        }
+    public void markAsDone() {
+        this.isDone = true;
     }
 
-    static class Event extends Task {
-        protected LocalDateTime from;
-        protected LocalDateTime to;
+    public void markAsNotDone() {
+        this.isDone = false;
+    }
 
-        public Event(String description, LocalDateTime from, LocalDateTime to) {
-            super(description, TaskType.EVENT);
-            this.from = from;
-            this.to = to;
-        }
-        
-        public Event(String description, LocalDateTime from, LocalDateTime to, boolean isDone) {
-            super(description, TaskType.EVENT, isDone);
-            this.from = from;
-            this.to = to;
-        }
-        
-        @Override
-        public LocalDateTime getDateTime() {
-            return from; // Return start time for event
-        }
+    public String getStatusIcon() {
+        return (isDone ? "[X]" : "[ ]");
+    }
 
-        @Override
-        public String toString() {
-            return getTypeIcon() + getStatusIcon() + " " + description + 
-                   " (from: " + from.format(DISPLAY_DATE_FORMATTER) + 
-                   " to: " + to.format(DISPLAY_DATE_FORMATTER) + ")";
+    public String getDescription() {
+        return description;
+    }
+
+    public String getTypeIcon() {
+        return "[" + type.getIcon() + "]";
+    }
+    
+    public abstract String toFileFormat();
+    
+    public LocalDateTime getDateTime() {
+        return null; // Base task has no date/time
+    }
+
+    @Override
+    public String toString() {
+        return getTypeIcon() + getStatusIcon() + " " + description;
+    }
+}
+
+class ToDo extends Task {
+    public ToDo(String description) {
+        super(description, TaskType.TODO);
+    }
+    
+    public ToDo(String description, boolean isDone) {
+        super(description, TaskType.TODO, isDone);
+    }
+    
+    @Override
+    public String toFileFormat() {
+        return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description;
+    }
+}
+
+class Deadline extends Task {
+    protected LocalDateTime by;
+
+    public Deadline(String description, LocalDateTime by) {
+        super(description, TaskType.DEADLINE);
+        this.by = by;
+    }
+    
+    public Deadline(String description, LocalDateTime by, boolean isDone) {
+        super(description, TaskType.DEADLINE, isDone);
+        this.by = by;
+    }
+    
+    public LocalDateTime getBy() {
+        return by;
+    }
+    
+    @Override
+    public LocalDateTime getDateTime() {
+        return by;
+    }
+
+    @Override
+    public String toString() {
+        return getTypeIcon() + getStatusIcon() + " " + description + 
+               " (by: " + by.format(DISPLAY_DATE_FORMATTER) + ")";
+    }
+    
+    @Override
+    public String toFileFormat() {
+        return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description + 
+               " | " + by.format(FILE_DATE_FORMATTER);
+    }
+}
+
+class Event extends Task {
+    protected LocalDateTime from;
+    protected LocalDateTime to;
+
+    public Event(String description, LocalDateTime from, LocalDateTime to) {
+        super(description, TaskType.EVENT);
+        this.from = from;
+        this.to = to;
+    }
+    
+    public Event(String description, LocalDateTime from, LocalDateTime to, boolean isDone) {
+        super(description, TaskType.EVENT, isDone);
+        this.from = from;
+        this.to = to;
+    }
+    
+    public LocalDateTime getFrom() {
+        return from;
+    }
+    
+    public LocalDateTime getTo() {
+        return to;
+    }
+    
+    @Override
+    public LocalDateTime getDateTime() {
+        return from; // Return start time for event
+    }
+
+    @Override
+    public String toString() {
+        return getTypeIcon() + getStatusIcon() + " " + description + 
+               " (from: " + from.format(DISPLAY_DATE_FORMATTER) + 
+               " to: " + to.format(DISPLAY_DATE_FORMATTER) + ")";
+    }
+    
+    @Override
+    public String toFileFormat() {
+        return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description + 
+               " | " + from.format(FILE_DATE_FORMATTER) + 
+               " | " + to.format(FILE_DATE_FORMATTER);
+    }
+}
+
+// ==================== TaskList ====================
+class TaskList {
+    private ArrayList<Task> tasks;
+    
+    public TaskList() {
+        this.tasks = new ArrayList<>();
+    }
+    
+    public TaskList(ArrayList<Task> tasks) {
+        this.tasks = tasks;
+    }
+    
+    public void addTask(Task task) {
+        tasks.add(task);
+    }
+    
+    public Task removeTask(int index) throws ChatterboxException {
+        if (index < 0 || index >= tasks.size()) {
+            throw new ChatterboxException("Task number " + (index + 1) + " does not exist.");
         }
-        
-        @Override
-        public String toFileFormat() {
-            return type.getIcon() + " | " + (isDone ? "1" : "0") + " | " + description + 
-                   " | " + from.format(FILE_DATE_FORMATTER) + 
-                   " | " + to.format(FILE_DATE_FORMATTER);
+        return tasks.remove(index);
+    }
+    
+    public Task getTask(int index) throws ChatterboxException {
+        if (index < 0 || index >= tasks.size()) {
+            throw new ChatterboxException("Task number " + (index + 1) + " does not exist.");
+        }
+        return tasks.get(index);
+    }
+    
+    public void markTask(int index, boolean isDone) throws ChatterboxException {
+        Task task = getTask(index);
+        if (isDone) {
+            task.markAsDone();
+        } else {
+            task.markAsNotDone();
         }
     }
     
-    /**
-     * Parses a date-time string in the format "yyyy-MM-dd HHmm"
-     */
-    private static LocalDateTime parseDateTime(String dateTimeStr) throws DateTimeParseException {
-        return LocalDateTime.parse(dateTimeStr, INPUT_DATE_FORMATTER);
+    public ArrayList<Task> getAllTasks() {
+        return tasks;
     }
     
-    /**
-     * Parses a date-only string in the format "yyyy-MM-dd"
-     */
-    private static LocalDateTime parseDate(String dateStr) throws DateTimeParseException {
-        return LocalDateTime.parse(dateStr + " 0000", INPUT_DATE_FORMATTER);
+    public int size() {
+        return tasks.size();
     }
     
-    /**
-     * Tries multiple date formats to parse the input
-     */
-    private static LocalDateTime parseFlexibleDateTime(String dateTimeStr) {
-        // Try full date-time format first
-        try {
-            return parseDateTime(dateTimeStr);
-        } catch (DateTimeParseException e1) {
-            // Try date-only format
-            try {
-                return parseDate(dateTimeStr);
-            } catch (DateTimeParseException e2) {
-                throw new DateTimeParseException(
-                    "Invalid date format. Please use yyyy-MM-dd HHmm (e.g., 2019-12-02 1800) " +
-                    "or yyyy-MM-dd (e.g., 2019-12-02)", dateTimeStr, 0);
+    public ArrayList<Task> findTasksOnDate(LocalDateTime date) {
+        ArrayList<Task> result = new ArrayList<>();
+        
+        for (Task task : tasks) {
+            if (task instanceof Deadline) {
+                Deadline deadline = (Deadline) task;
+                if (deadline.getBy().toLocalDate().equals(date.toLocalDate())) {
+                    result.add(task);
+                }
+            } else if (task instanceof Event) {
+                Event event = (Event) task;
+                // Check if the event occurs on the given date
+                if (!event.getFrom().toLocalDate().isAfter(date.toLocalDate()) && 
+                    !event.getTo().toLocalDate().isBefore(date.toLocalDate())) {
+                    result.add(task);
+                }
+            }
+        }
+        
+        return result;
+    }
+}
+
+// ==================== Ui ====================
+class Ui {
+    private static final String LINE = "________________________________";
+    private Scanner scanner;
+    
+    public Ui() {
+        scanner = new Scanner(System.in);
+    }
+    
+    public void showWelcome() {
+        showLine();
+        System.out.println(" Hello! I'm Chatterbox");
+        System.out.println(" What can I do for you?");
+        showLine();
+    }
+    
+    public void showGoodbye() {
+        System.out.println(" Bye! Hope to see you again soon!");
+    }
+    
+    public void showLine() {
+        System.out.println(LINE);
+    }
+    
+    public String readCommand() {
+        return scanner.nextLine();
+    }
+    
+    public void showError(String message) {
+        System.out.println(" OOPS!!! " + message);
+    }
+    
+    public void showLoadingError(String message) {
+        System.err.println("Error loading tasks: " + message);
+    }
+    
+    public void showTaskAdded(Task task, int totalTasks) {
+        System.out.println(" Got it. I've added this task:");
+        System.out.println("   " + task);
+        System.out.println(" Now you have " + totalTasks + " tasks in the list.");
+    }
+    
+    public void showTaskRemoved(Task task, int totalTasks) {
+        System.out.println(" Noted. I've removed this task:");
+        System.out.println("   " + task);
+        System.out.println(" Now you have " + totalTasks + " tasks in the list.");
+    }
+    
+    public void showTaskMarked(Task task, boolean isDone) {
+        if (isDone) {
+            System.out.println(" Nice! Congrats on finishing this task!");
+        } else {
+            System.out.println(" OK, I've forgotten about it already!");
+        }
+        System.out.println("   " + task);
+    }
+    
+    public void showTaskList(ArrayList<Task> tasks) {
+        System.out.println(" Here are the tasks in your list:");
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println(" " + (i + 1) + "." + tasks.get(i));
+        }
+    }
+    
+    public void showTasksOnDate(ArrayList<Task> tasks, String date) {
+        System.out.println(" Tasks on " + date + ":");
+        if (tasks.isEmpty()) {
+            System.out.println(" No tasks found for this date.");
+        } else {
+            for (int i = 0; i < tasks.size(); i++) {
+                System.out.println(" " + (i + 1) + "." + tasks.get(i));
             }
         }
     }
     
-    /**
-     * Loads tasks from the data file.
-     * Creates data directory and file if they don't exist.
-     * 
-     * @return List of loaded tasks
-     */
-    private static ArrayList<Task> loadTasks() {
+    public void close() {
+        scanner.close();
+    }
+}
+
+// ==================== Storage ====================
+class Storage {
+    private String filePath;
+    private static final DateTimeFormatter FILE_DATE_FORMATTER = 
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+    
+    public Storage(String filePath) {
+        this.filePath = filePath;
+    }
+    
+    public ArrayList<Task> load() throws ChatterboxException {
         ArrayList<Task> tasks = new ArrayList<>();
         
         try {
-            Path dataDirPath = Paths.get(DATA_DIR);
-            Path dataFilePath = Paths.get(DATA_FILE);
+            Path dataFilePath = Paths.get(filePath);
+            Path dataDirPath = dataFilePath.getParent();
             
             // Create data directory if it doesn't exist
-            if (!Files.exists(dataDirPath)) {
+            if (dataDirPath != null && !Files.exists(dataDirPath)) {
                 Files.createDirectories(dataDirPath);
             }
             
@@ -259,20 +387,13 @@ public class Chatterbox {
             }
             
         } catch (IOException e) {
-            System.err.println("Error loading tasks: " + e.getMessage());
+            throw new ChatterboxException("Error loading tasks: " + e.getMessage());
         }
         
         return tasks;
     }
     
-    /**
-     * Parses a single line from the data file into a Task object.
-     * 
-     * @param line The line from the data file
-     * @return Task object, or null if line is empty
-     * @throws IllegalArgumentException if line format is invalid
-     */
-    private static Task parseTaskFromFile(String line) {
+    private Task parseTaskFromFile(String line) {
         if (line == null || line.trim().isEmpty()) {
             return null;
         }
@@ -291,7 +412,7 @@ public class Chatterbox {
         boolean isDone = statusStr.equals("1");
         
         try {
-            TaskType type = TaskType.fromString(typeStr);
+            Task.TaskType type = Task.TaskType.fromString(typeStr);
             
             switch (type) {
             case TODO:
@@ -325,20 +446,17 @@ public class Chatterbox {
         }
     }
     
-    /**
-     * Saves all tasks to the data file.
-     * 
-     * @param tasks The list of tasks to save
-     */
-    private static void saveTasks(ArrayList<Task> tasks) {
+    public void save(ArrayList<Task> tasks) throws ChatterboxException {
         try {
+            Path dataFilePath = Paths.get(filePath);
+            Path dataDirPath = dataFilePath.getParent();
+            
             // Ensure data directory exists
-            Path dataDirPath = Paths.get(DATA_DIR);
-            if (!Files.exists(dataDirPath)) {
+            if (dataDirPath != null && !Files.exists(dataDirPath)) {
                 Files.createDirectories(dataDirPath);
             }
             
-            FileWriter writer = new FileWriter(DATA_FILE);
+            FileWriter writer = new FileWriter(filePath);
             
             for (Task task : tasks) {
                 writer.write(task.toFileFormat() + System.lineSeparator());
@@ -347,370 +465,371 @@ public class Chatterbox {
             writer.close();
             
         } catch (IOException e) {
-            System.err.println("Error saving tasks: " + e.getMessage());
+            throw new ChatterboxException("Error saving tasks: " + e.getMessage());
+        }
+    }
+}
+
+// ==================== Command Classes ====================
+abstract class Command {
+    public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws ChatterboxException;
+    public boolean isExit() {
+        return false;
+    }
+}
+
+class ExitCommand extends Command {
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage) {
+        ui.showGoodbye();
+    }
+    
+    @Override
+    public boolean isExit() {
+        return true;
+    }
+}
+
+class ListCommand extends Command {
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage) {
+        ui.showTaskList(tasks.getAllTasks());
+    }
+}
+
+class MarkCommand extends Command {
+    private int taskIndex;
+    private boolean isDone;
+    
+    public MarkCommand(int taskIndex, boolean isDone) {
+        this.taskIndex = taskIndex;
+        this.isDone = isDone;
+    }
+    
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage) throws ChatterboxException {
+        tasks.markTask(taskIndex, isDone);
+        Task task = tasks.getTask(taskIndex);
+        ui.showTaskMarked(task, isDone);
+        storage.save(tasks.getAllTasks());
+    }
+}
+
+class DeleteCommand extends Command {
+    private int taskIndex;
+    
+    public DeleteCommand(int taskIndex) {
+        this.taskIndex = taskIndex;
+    }
+    
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage) throws ChatterboxException {
+        Task removedTask = tasks.removeTask(taskIndex);
+        ui.showTaskRemoved(removedTask, tasks.size());
+        storage.save(tasks.getAllTasks());
+    }
+}
+
+class AddTodoCommand extends Command {
+    private String description;
+    
+    public AddTodoCommand(String description) {
+        this.description = description;
+    }
+    
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage) throws ChatterboxException {
+        Task newTask = new ToDo(description);
+        tasks.addTask(newTask);
+        ui.showTaskAdded(newTask, tasks.size());
+        storage.save(tasks.getAllTasks());
+    }
+}
+
+class AddDeadlineCommand extends Command {
+    private String description;
+    private LocalDateTime by;
+    
+    public AddDeadlineCommand(String description, LocalDateTime by) {
+        this.description = description;
+        this.by = by;
+    }
+    
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage) throws ChatterboxException {
+        Task newTask = new Deadline(description, by);
+        tasks.addTask(newTask);
+        ui.showTaskAdded(newTask, tasks.size());
+        storage.save(tasks.getAllTasks());
+    }
+}
+
+class AddEventCommand extends Command {
+    private String description;
+    private LocalDateTime from;
+    private LocalDateTime to;
+    
+    public AddEventCommand(String description, LocalDateTime from, LocalDateTime to) {
+        this.description = description;
+        this.from = from;
+        this.to = to;
+    }
+    
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage) throws ChatterboxException {
+        Task newTask = new Event(description, from, to);
+        tasks.addTask(newTask);
+        ui.showTaskAdded(newTask, tasks.size());
+        storage.save(tasks.getAllTasks());
+    }
+}
+
+class FindDateCommand extends Command {
+    private LocalDateTime date;
+    private static final DateTimeFormatter DATE_ONLY_FORMATTER = 
+        DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    
+    public FindDateCommand(LocalDateTime date) {
+        this.date = date;
+    }
+    
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage) {
+        ArrayList<Task> foundTasks = tasks.findTasksOnDate(date);
+        ui.showTasksOnDate(foundTasks, date.format(DATE_ONLY_FORMATTER));
+    }
+}
+
+// ==================== Parser ====================
+class Parser {
+    private static final DateTimeFormatter INPUT_DATE_FORMATTER = 
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+    private static final DateTimeFormatter DATE_ONLY_FORMATTER = 
+        DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    
+    public Command parseCommand(String fullCommand) throws ChatterboxException {
+        if (fullCommand.trim().isEmpty()) {
+            throw new ChatterboxException("Please enter a command.");
+        }
+        
+        String[] parts = fullCommand.trim().split(" ", 2);
+        String commandWord = parts[0].toLowerCase();
+        String arguments = parts.length > 1 ? parts[1] : "";
+        
+        switch (commandWord) {
+        case "bye":
+            return new ExitCommand();
+            
+        case "list":
+            return new ListCommand();
+            
+        case "mark":
+            return parseMarkCommand(arguments, true);
+            
+        case "unmark":
+            return parseMarkCommand(arguments, false);
+            
+        case "delete":
+            return parseDeleteCommand(arguments);
+            
+        case "todo":
+            return parseTodoCommand(arguments);
+            
+        case "deadline":
+            return parseDeadlineCommand(arguments);
+            
+        case "event":
+            return parseEventCommand(arguments);
+            
+        case "finddate":
+            return parseFindDateCommand(arguments);
+            
+        default:
+            throw new ChatterboxException(
+                "Hmm, I don't recognize that command! " +
+                "Try 'todo', 'deadline', 'event', 'list', or 'finddate'!");
         }
     }
     
-    /**
-     * Finds tasks occurring on a specific date
-     */
-    private static ArrayList<Task> findTasksOnDate(ArrayList<Task> tasks, LocalDateTime date) {
-        ArrayList<Task> result = new ArrayList<>();
+    private Command parseMarkCommand(String arguments, boolean isDone) throws ChatterboxException {
+        if (arguments.trim().isEmpty()) {
+            throw new ChatterboxException("Please specify which task to " + 
+                (isDone ? "mark" : "unmark") + ".");
+        }
         
-        for (Task task : tasks) {
-            if (task instanceof Deadline) {
-                Deadline deadline = (Deadline) task;
-                if (deadline.by.toLocalDate().equals(date.toLocalDate())) {
-                    result.add(task);
-                }
-            } else if (task instanceof Event) {
-                Event event = (Event) task;
-                // Check if the event occurs on the given date
-                if (!event.from.toLocalDate().isAfter(date.toLocalDate()) && 
-                    !event.to.toLocalDate().isBefore(date.toLocalDate())) {
-                    result.add(task);
-                }
+        try {
+            int taskNum = Integer.parseInt(arguments.trim()) - 1;
+            return new MarkCommand(taskNum, isDone);
+        } catch (NumberFormatException e) {
+            throw new ChatterboxException("Please provide a valid task number.");
+        }
+    }
+    
+    private Command parseDeleteCommand(String arguments) throws ChatterboxException {
+        if (arguments.trim().isEmpty()) {
+            throw new ChatterboxException("Please specify which task to delete.");
+        }
+        
+        try {
+            int taskNum = Integer.parseInt(arguments.trim()) - 1;
+            return new DeleteCommand(taskNum);
+        } catch (NumberFormatException e) {
+            throw new ChatterboxException("Please provide a valid task number.");
+        }
+    }
+    
+    private Command parseTodoCommand(String arguments) throws ChatterboxException {
+        if (arguments.trim().isEmpty()) {
+            throw new ChatterboxException("The description of a todo cannot be empty.");
+        }
+        
+        return new AddTodoCommand(arguments.trim());
+    }
+    
+    private Command parseDeadlineCommand(String arguments) throws ChatterboxException {
+        if (arguments.trim().isEmpty()) {
+            throw new ChatterboxException("The description of a deadline cannot be empty.");
+        }
+        
+        String[] parts = arguments.split("/by ", 2);
+        if (parts.length < 2) {
+            throw new ChatterboxException("Please specify the deadline with /by");
+        }
+        
+        String description = parts[0].trim();
+        String byStr = parts[1].trim();
+        
+        if (description.isEmpty()) {
+            throw new ChatterboxException("The description of a deadline cannot be empty.");
+        }
+        
+        if (byStr.isEmpty()) {
+            throw new ChatterboxException("The deadline date/time cannot be empty.");
+        }
+        
+        try {
+            LocalDateTime by = parseFlexibleDateTime(byStr);
+            return new AddDeadlineCommand(description, by);
+        } catch (DateTimeParseException e) {
+            throw new ChatterboxException(
+                "Invalid date format. Please use yyyy-MM-dd HHmm (e.g., 2019-12-02 1800) " +
+                "or yyyy-MM-dd (e.g., 2019-12-02)");
+        }
+    }
+    
+    private Command parseEventCommand(String arguments) throws ChatterboxException {
+        if (arguments.trim().isEmpty()) {
+            throw new ChatterboxException("The description of an event cannot be empty.");
+        }
+        
+        String[] fromParts = arguments.split("/from ", 2);
+        if (fromParts.length < 2) {
+            throw new ChatterboxException("Please specify the event time with /from and /to");
+        }
+        
+        String[] toParts = fromParts[1].split("/to ", 2);
+        if (toParts.length < 2) {
+            throw new ChatterboxException("Please specify the event time with /from and /to");
+        }
+        
+        String description = fromParts[0].trim();
+        String fromStr = toParts[0].trim();
+        String toStr = toParts[1].trim();
+        
+        if (description.isEmpty()) {
+            throw new ChatterboxException("The description of an event cannot be empty.");
+        }
+        
+        if (fromStr.isEmpty() || toStr.isEmpty()) {
+            throw new ChatterboxException("The event time cannot be empty.");
+        }
+        
+        try {
+            LocalDateTime from = parseFlexibleDateTime(fromStr);
+            LocalDateTime to = parseFlexibleDateTime(toStr);
+            
+            if (to.isBefore(from)) {
+                throw new ChatterboxException("The 'to' time must be after the 'from' time.");
+            }
+            
+            return new AddEventCommand(description, from, to);
+        } catch (DateTimeParseException e) {
+            throw new ChatterboxException(
+                "Invalid date format. Please use yyyy-MM-dd HHmm (e.g., 2019-12-02 1800) " +
+                "or yyyy-MM-dd (e.g., 2019-12-02)");
+        }
+    }
+    
+    private Command parseFindDateCommand(String arguments) throws ChatterboxException {
+        if (arguments.trim().isEmpty()) {
+            throw new ChatterboxException("Please specify a date (yyyy-MM-dd).");
+        }
+        
+        try {
+            LocalDateTime date = parseDate(arguments.trim());
+            return new FindDateCommand(date);
+        } catch (DateTimeParseException e) {
+            throw new ChatterboxException("Invalid date format. Please use yyyy-MM-dd (e.g., 2019-12-02)");
+        }
+    }
+    
+    private LocalDateTime parseDate(String dateStr) throws DateTimeParseException {
+        return LocalDateTime.parse(dateStr + " 0000", INPUT_DATE_FORMATTER);
+    }
+    
+    private LocalDateTime parseFlexibleDateTime(String dateTimeStr) throws DateTimeParseException {
+        // Try full date-time format first
+        try {
+            return LocalDateTime.parse(dateTimeStr, INPUT_DATE_FORMATTER);
+        } catch (DateTimeParseException e1) {
+            // Try date-only format
+            return parseDate(dateTimeStr);
+        }
+    }
+}
+
+// ==================== Main Chatterbox Class ====================
+public class Chatterbox {
+    private Storage storage;
+    private TaskList tasks;
+    private Ui ui;
+    private Parser parser;
+
+    public Chatterbox(String filePath) {
+        ui = new Ui();
+        storage = new Storage(filePath);
+        parser = new Parser();
+        
+        try {
+            tasks = new TaskList(storage.load());
+        } catch (ChatterboxException e) {
+            ui.showLoadingError(e.getMessage());
+            tasks = new TaskList();
+        }
+    }
+
+    public void run() {
+        ui.showWelcome();
+        boolean isExit = false;
+        
+        while (!isExit) {
+            try {
+                String fullCommand = ui.readCommand();
+                ui.showLine();
+                Command command = parser.parseCommand(fullCommand);
+                command.execute(tasks, ui, storage);
+                isExit = command.isExit();
+            } catch (ChatterboxException e) {
+                ui.showError(e.getMessage());
+            } finally {
+                ui.showLine();
             }
         }
         
-        return result;
+        ui.close();
     }
 
     public static void main(String[] args) {
-        String LINE = "________________________________";
-        String GREET_MSG = " Hello! I'm Chatterbox\n" +
-                            " What can I do for you?";
-        String BYE_MSG = " Bye! Hope to see you again soon!";
-        
-        System.out.println(LINE);
-        System.out.println(GREET_MSG);
-        System.out.println(LINE);
-
-        Scanner scanner = new Scanner(System.in);
-        String input;
-        
-        // Load tasks from file
-        ArrayList<Task> tasks = loadTasks();
-        System.out.println(" Loaded " + tasks.size() + " tasks from memory.");
-        System.out.println(LINE);
-        
-        while (true) {
-            input = scanner.nextLine();
-            boolean tasksChanged = false;
-            
-            // Exits if user types "bye"
-            if (input.equals("bye")) {
-                System.out.println(LINE);
-                System.out.println(BYE_MSG);
-                System.out.println(LINE);
-                break;
-            }
-            
-            // Handle empty input
-            if (input.trim().isEmpty()) {
-                System.out.println(LINE);
-                System.out.println(" OOPS!!! Please enter a command.");
-                System.out.println(LINE);
-                continue;
-            }
-            
-            // Prints out memory if user types "list"
-            if (input.equals("list")) {
-                System.out.println(LINE);
-                System.out.println(" Here are the tasks in your list:");
-                for (int i = 0; i < tasks.size(); i++) {
-                    System.out.println(" " + (i + 1) + "." + tasks.get(i));
-                }
-                System.out.println(LINE);
-                continue;
-            }
-            
-            // Find tasks on specific date
-            if (input.startsWith("finddate ")) {
-                String dateStr = input.substring(9).trim();
-                if (dateStr.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! Please specify a date (yyyy-MM-dd).");
-                    System.out.println(LINE);
-                    continue;
-                }
-                try {
-                    LocalDateTime date = parseDate(dateStr);
-                    ArrayList<Task> foundTasks = findTasksOnDate(tasks, date);
-                    
-                    System.out.println(LINE);
-                    System.out.println(" Tasks on " + date.format(DATE_ONLY_FORMATTER) + ":");
-                    if (foundTasks.isEmpty()) {
-                        System.out.println(" No tasks found for this date.");
-                    } else {
-                        for (int i = 0; i < foundTasks.size(); i++) {
-                            System.out.println(" " + (i + 1) + "." + foundTasks.get(i));
-                        }
-                    }
-                    System.out.println(LINE);
-                } catch (DateTimeParseException e) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! Invalid date format. Please use yyyy-MM-dd (e.g., 2019-12-02)");
-                    System.out.println(LINE);
-                }
-                continue;
-            }
-            
-            // Marks task as done
-            if (input.startsWith("mark ")) {
-                if (input.substring(5).trim().isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! Please specify which task to mark.");
-                    System.out.println(LINE);
-                    continue;
-                }
-                try {
-                    int taskNum = Integer.parseInt(input.substring(5).trim());
-                    if (taskNum > 0 && taskNum <= tasks.size()) {
-                        tasks.get(taskNum - 1).markAsDone();
-                        tasksChanged = true;
-                        System.out.println(LINE);
-                        System.out.println(" Nice! Congrats on finishing this task!");
-                        System.out.println("   " + tasks.get(taskNum - 1));
-                        System.out.println(LINE);
-                    } else {
-                        System.out.println(LINE);
-                        System.out.println(" OOPS!!! Task number " + taskNum + " does not exist.");
-                        System.out.println(LINE);
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! Please provide a valid task number.");
-                    System.out.println(LINE);
-                }
-            }
-            // Handle just "mark" without number
-            else if (input.equals("mark")) {
-                System.out.println(LINE);
-                System.out.println(" OOPS!!! Please specify which task to mark.");
-                System.out.println(LINE);
-            }
-            // Marks task as not done
-            else if (input.startsWith("unmark ")) {
-                if (input.substring(7).trim().isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! Please specify which task to unmark.");
-                    System.out.println(LINE);
-                    continue;
-                }
-                try {
-                    int taskNum = Integer.parseInt(input.substring(7).trim());
-                    if (taskNum > 0 && taskNum <= tasks.size()) {
-                        tasks.get(taskNum - 1).markAsNotDone();
-                        tasksChanged = true;
-                        System.out.println(LINE);
-                        System.out.println(" OK, I've forgotten about it already!");
-                        System.out.println("   " + tasks.get(taskNum - 1));
-                        System.out.println(LINE);
-                    } else {
-                        System.out.println(LINE);
-                        System.out.println(" OOPS!!! Task number " + taskNum + " does not exist.");
-                        System.out.println(LINE);
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! Please provide a valid task number.");
-                    System.out.println(LINE);
-                }
-            }
-            // Handle just "unmark" without number
-            else if (input.equals("unmark")) {
-                System.out.println(LINE);
-                System.out.println(" OOPS!!! Please specify which task to unmark.");
-                System.out.println(LINE);
-            }
-            // Deletes a task
-            else if (input.startsWith("delete ")) {
-                if (input.substring(7).trim().isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! Please specify which task to delete.");
-                    System.out.println(LINE);
-                    continue;
-                }
-                try {
-                    int taskNum = Integer.parseInt(input.substring(7).trim());
-                    if (taskNum > 0 && taskNum <= tasks.size()) {
-                        Task removedTask = tasks.remove(taskNum - 1);
-                        tasksChanged = true;
-                        System.out.println(LINE);
-                        System.out.println(" Noted. I've removed this task:");
-                        System.out.println("   " + removedTask);
-                        System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
-                        System.out.println(LINE);
-                    } else {
-                        System.out.println(LINE);
-                        System.out.println(" OOPS!!! Task number " + taskNum + " does not exist.");
-                        System.out.println(LINE);
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! Please provide a valid task number.");
-                    System.out.println(LINE);
-                }
-            }
-            // Handle just "delete" without number
-            else if (input.equals("delete")) {
-                System.out.println(LINE);
-                System.out.println(" OOPS!!! Please specify which task to delete.");
-                System.out.println(LINE);
-            }
-            // Adds a todo task
-            else if (input.startsWith("todo ")) {
-                String description = input.substring(5).trim();
-                if (description.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! The description of a todo cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-                Task newTask = new ToDo(description);
-                tasks.add(newTask);
-                tasksChanged = true;
-                System.out.println(LINE);
-                System.out.println(" Got it. I'll make sure you won't forget this task!");
-                System.out.println("   " + newTask);
-                System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
-                System.out.println(LINE);
-            }
-            // Handle just "todo" without description
-            else if (input.equals("todo")) {
-                System.out.println(LINE);
-                System.out.println(" OOPS!!! The description of a todo cannot be empty.");
-                System.out.println(LINE);
-            }
-            // Adds a deadline task
-            else if (input.startsWith("deadline ")) {
-                String rest = input.substring(9).trim();
-                if (rest.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! The description of a deadline cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-                int byIndex = rest.indexOf("/by ");
-                if (byIndex == -1) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! Please specify the deadline with /by");
-                    System.out.println(LINE);
-                    continue;
-                }
-                String description = rest.substring(0, byIndex).trim();
-                String byStr = rest.substring(byIndex + 4).trim();
-                if (description.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! The description of a deadline cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-                if (byStr.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! The deadline date/time cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-                try {
-                    LocalDateTime by = parseFlexibleDateTime(byStr);
-                    Task newTask = new Deadline(description, by);
-                    tasks.add(newTask);
-                    tasksChanged = true;
-                    System.out.println(LINE);
-                    System.out.println(" Got it. Remember to complete this task on time!");
-                    System.out.println("   " + newTask);
-                    System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
-                    System.out.println(LINE);
-                } catch (DateTimeParseException e) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! " + e.getMessage());
-                    System.out.println(LINE);
-                }
-            }
-            // Handle just "deadline" without description
-            else if (input.equals("deadline")) {
-                System.out.println(LINE);
-                System.out.println(" OOPS!!! The description of a deadline cannot be empty.");
-                System.out.println(LINE);
-            }
-            // Adds an event task
-            else if (input.startsWith("event ")) {
-                String rest = input.substring(6).trim();
-                if (rest.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! The description of an event cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-                int fromIndex = rest.indexOf("/from ");
-                int toIndex = rest.indexOf("/to ");
-                if (fromIndex == -1 || toIndex == -1) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! Please specify the event time with /from and /to");
-                    System.out.println(LINE);
-                    continue;
-                }
-                String description = rest.substring(0, fromIndex).trim();
-                String fromStr = rest.substring(fromIndex + 6, toIndex).trim();
-                String toStr = rest.substring(toIndex + 4).trim();
-                if (description.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! The description of an event cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-                if (fromStr.isEmpty() || toStr.isEmpty()) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! The event time cannot be empty.");
-                    System.out.println(LINE);
-                    continue;
-                }
-                try {
-                    LocalDateTime from = parseFlexibleDateTime(fromStr);
-                    LocalDateTime to = parseFlexibleDateTime(toStr);
-                    
-                    // Validate that 'to' is after 'from'
-                    if (to.isBefore(from)) {
-                        System.out.println(LINE);
-                        System.out.println(" OOPS!!! The 'to' time must be after the 'from' time.");
-                        System.out.println(LINE);
-                        continue;
-                    }
-                    
-                    Task newTask = new Event(description, from, to);
-                    tasks.add(newTask);
-                    tasksChanged = true;
-                    System.out.println(LINE);
-                    System.out.println(" Got it. Make sure to attend this event!");
-                    System.out.println("   " + newTask);
-                    System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
-                    System.out.println(LINE);
-                } catch (DateTimeParseException e) {
-                    System.out.println(LINE);
-                    System.out.println(" OOPS!!! " + e.getMessage());
-                    System.out.println(LINE);
-                }
-            }
-            // Handle just "event" without description
-            else if (input.equals("event")) {
-                System.out.println(LINE);
-                System.out.println(" OOPS!!! The description of an event cannot be empty.");
-                System.out.println(LINE);
-            }
-            // Unknown command - show error
-            else {
-                System.out.println(LINE);
-                System.out.println(" Hmm, I don't recognize that command! Try 'todo', 'deadline', 'event', 'list', or 'finddate'!");
-                System.out.println(LINE);
-            }
-            
-            // Save tasks if they were modified
-            if (tasksChanged) {
-                saveTasks(tasks);
-            }
-        }
-        scanner.close();
+        new Chatterbox("./data/chatterbox.txt").run();
     }
 }
