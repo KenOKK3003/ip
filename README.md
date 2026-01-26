@@ -6,25 +6,29 @@
 
 // Product intro goes here
 
-## Adding deadlines
+## Commands
+todo XXX: Adds a todo task named XXX
+E.g todo Read a book
 
-// Describe the action and its outcome.
+deadline XXX /by YYY: Adds a deadline task named XXX, due by date YYY
+E.g deadline Read a book /by 2019-12-02 1800
 
-// Give examples of usage
+event XXX /from YYY /to ZZZ: Adds an event task named XXX, from YYY to ZZZ
+E.g. event Read a book /from 2019-12-02 1400 /to 2019-12-02 1600
 
-Example: `keyword (optional arguments)`
+list: lists all saved events
 
-// A description of the expected outcome goes here
+mark X: marks task X as done, can only be used on unmarked tasks
 
-```
-expected output
-```
+unmark X: marks task X as undone, can only be used on marked tasks
 
-## Feature ABC
-
-// Feature details
+delete X: deletes task X from saved list
 
 
-## Feature XYZ
+## Feature: Permanent memory (Level 7)
+The chatbot will save your list in storage, allowing it to remember your list of tasks between sessions!
 
-// Feature details
+
+## Feature: Search tasks by date
+The chatbot allows you to search which deadline tasks are due on a specified date using the "finddate" command!
+finddate 2019-12-02: Shows all tasks due on this date!
