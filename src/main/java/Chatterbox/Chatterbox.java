@@ -19,6 +19,10 @@ class ChatterboxException extends Exception {
 }
 
 // ==================== Task Classes ====================
+/**
+ * Represents a generic task in the Chatterbox application.
+ * Serves as the base class for specific task types such as ToDo, Deadline, and Event.
+ */
 abstract class Task {
     enum TaskType {
         TODO("T"),
@@ -57,45 +61,96 @@ abstract class Task {
     protected static final DateTimeFormatter FILE_DATE_FORMATTER = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
 
+    /**
+     * Constructs a new Task with the specified description and type.
+     * The task is initially marked as not done.
+     *
+     * @param description Description of the task.
+     * @param type Type of the task (TODO, DEADLINE, EVENT).
+     */
     public Task(String description, TaskType type) {
         this.description = description;
         this.isDone = false;
         this.type = type;
     }
 
+    /**
+     * Constructs a new Task with the specified description, type, and completion status.
+     *
+     * @param description Description of the task.
+     * @param type Type of the task (TODO, DEADLINE, EVENT).
+     * @param isDone Completion status of the task.
+     */
     public Task(String description, TaskType type, boolean isDone) {
         this.description = description;
         this.isDone = isDone;
         this.type = type;
     }
 
+    /**
+     * Marks this task as done.
+     */
     public void markAsDone() {
         this.isDone = true;
     }
 
+    /**
+     * Marks this task as not done.
+     */
     public void markAsNotDone() {
         this.isDone = false;
     }
 
+    /**
+     * Returns the status icon representing whether the task is done.
+     *
+     * @return Status icon string ("[X]" if done, "[ ]" if not done).
+     */
     public String getStatusIcon() {
         return (isDone ? "[X]" : "[ ]");
     }
 
+    /**
+     * Returns the description of the task.
+     *
+     * @return Task description.
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Returns the icon representing the type of the task.
+     *
+     * @return Type icon string (e.g., "[T]", "[D]", "[E]").
+     */
     public String getTypeIcon() {
         return "[" + type.getIcon() + "]";
     }
     
+    /**
+     * Returns a string representation of the task suitable for file storage.
+     *
+     * @return File format string for the task.
+     */
     public abstract String toFileFormat();
     
+    /**
+     * Returns the date and time associated with the task, if any.
+     * For base tasks, returns null.
+     *
+     * @return Date and time of the task, or null if not applicable.
+     */
     public LocalDateTime getDateTime() {
         return null; // Base task has no date/time
     }
 
     @Override
+    /**
+     * Returns a string representation of the task for display purposes.
+     *
+     * @return Display string for the task.
+     */
     public String toString() {
         return getTypeIcon() + getStatusIcon() + " " + description;
     }
@@ -196,21 +251,45 @@ class Event extends Task {
 }
 
 // ==================== TaskList ====================
+/**
+ * Represents a list of tasks in the Chatterbox application.
+ * Provides methods to add, remove, retrieve, and search for tasks.
+ */
 class TaskList {
     private ArrayList<Task> tasks;
     
+    /**
+     * Constructs an empty TaskList.
+     */
     public TaskList() {
         this.tasks = new ArrayList<>();
     }
     
+    /**
+     * Constructs a TaskList with the specified list of tasks.
+     *
+     * @param tasks List of tasks to initialise the TaskList with.
+     */
     public TaskList(ArrayList<Task> tasks) {
         this.tasks = tasks;
     }
     
+    /**
+     * Adds a task to the task list.
+     *
+     * @param task Task to be added.
+     */
     public void addTask(Task task) {
         tasks.add(task);
     }
     
+    /**
+     * Removes the task at the specified index from the task list.
+     *
+     * @param index Index of the task to remove (0-based).
+     * @return The removed task.
+     * @throws ChatterboxException If the index is out of bounds.
+     */
     public Task removeTask(int index) throws ChatterboxException {
         if (index < 0 || index >= tasks.size()) {
             throw new ChatterboxException("Task number " + (index + 1) + " does not exist.");
@@ -218,6 +297,13 @@ class TaskList {
         return tasks.remove(index);
     }
     
+    /**
+     * Returns the task at the specified index.
+     *
+     * @param index Index of the task to retrieve (0-based).
+     * @return The task at the specified index.
+     * @throws ChatterboxException If the index is out of bounds.
+     */
     public Task getTask(int index) throws ChatterboxException {
         if (index < 0 || index >= tasks.size()) {
             throw new ChatterboxException("Task number " + (index + 1) + " does not exist.");
@@ -225,6 +311,13 @@ class TaskList {
         return tasks.get(index);
     }
     
+    /**
+     * Marks the task at the specified index as done or not done.
+     *
+     * @param index Index of the task to mark (0-based).
+     * @param isDone True to mark as done, false to mark as not done.
+     * @throws ChatterboxException If the index is out of bounds.
+     */
     public void markTask(int index, boolean isDone) throws ChatterboxException {
         Task task = getTask(index);
         if (isDone) {
@@ -234,14 +327,30 @@ class TaskList {
         }
     }
     
+    /**
+     * Returns the list of all tasks in the task list.
+     *
+     * @return List of all tasks.
+     */
     public ArrayList<Task> getAllTasks() {
         return tasks;
     }
     
+    /**
+     * Returns the number of tasks in the task list.
+     *
+     * @return Number of tasks.
+     */
     public int size() {
         return tasks.size();
     }
     
+    /**
+     * Returns a list of tasks that occur on the specified date.
+     *
+     * @param date Date to search for tasks.
+     * @return List of tasks occurring on the given date.
+     */
     public ArrayList<Task> findTasksOnDate(LocalDateTime date) {
         ArrayList<Task> result = new ArrayList<>();
         
@@ -346,15 +455,31 @@ class Ui {
 }
 
 // ==================== Storage ====================
+/**
+ * Handles loading and saving of tasks to and from a file for the Chatterbox application.
+ * Provides methods to persist and retrieve the task list.
+ */
 class Storage {
     private String filePath;
     private static final DateTimeFormatter FILE_DATE_FORMATTER = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
     
+    /**
+     * Constructs a Storage object with the specified file path.
+     *
+     * @param filePath Path to the data file for storing tasks.
+     */
     public Storage(String filePath) {
         this.filePath = filePath;
     }
     
+    /**
+     * Loads tasks from the data file.
+     * Creates the file and its parent directory if they do not exist.
+     *
+     * @return List of tasks loaded from the file.
+     * @throws ChatterboxException If an error occurs while loading tasks.
+     */
     public ArrayList<Task> load() throws ChatterboxException {
         ArrayList<Task> tasks = new ArrayList<>();
         
@@ -447,6 +572,13 @@ class Storage {
         }
     }
     
+    /**
+     * Saves the given list of tasks to the data file.
+     * Creates the file and its parent directory if they do not exist.
+     *
+     * @param tasks List of tasks to save.
+     * @throws ChatterboxException If an error occurs while saving tasks.
+     */
     public void save(ArrayList<Task> tasks) throws ChatterboxException {
         try {
             Path dataFilePath = Paths.get(filePath);
@@ -472,8 +604,25 @@ class Storage {
 }
 
 // ==================== Command Classes ====================
+/**
+ * Represents an executable command in the Chatterbox application.
+ * Serves as the base class for all user commands.
+ */
 abstract class Command {
+    /**
+     * Executes the command using the provided task list, UI, and storage.
+     *
+     * @param tasks The task list to operate on.
+     * @param ui The user interface for displaying output.
+     * @param storage The storage handler for persisting changes.
+     * @throws ChatterboxException If an error occurs during execution.
+     */
     public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws ChatterboxException;
+    /**
+     * Returns whether this command will cause the application to exit.
+     *
+     * @return True if the command signals exit, false otherwise.
+     */
     public boolean isExit() {
         return false;
     }
@@ -602,12 +751,23 @@ class FindDateCommand extends Command {
 }
 
 // ==================== Parser ====================
+/**
+ * Parses user input and creates corresponding Command objects for the Chatterbox application.
+ * Handles command recognition and argument extraction.
+ */
 class Parser {
     private static final DateTimeFormatter INPUT_DATE_FORMATTER = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
     private static final DateTimeFormatter DATE_ONLY_FORMATTER = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
+    /**
+     * Parses the full user input and returns the corresponding Command object.
+     *
+     * @param fullCommand The complete user input string.
+     * @return The Command object representing the user's command.
+     * @throws ChatterboxException If the input is invalid or unrecognised.
+     */
     public Command parseCommand(String fullCommand) throws ChatterboxException {
         if (fullCommand.trim().isEmpty()) {
             throw new ChatterboxException("Please enter a command.");
@@ -790,12 +950,22 @@ class Parser {
 }
 
 // ==================== Main Chatterbox Class ====================
+/**
+ * Represents the main entry point for the Chatterbox application.
+ * Handles initialisation, command processing loop, and program execution.
+ */
 public class Chatterbox {
     private Storage storage;
     private TaskList tasks;
     private Ui ui;
     private Parser parser;
 
+    /**
+     * Constructs a Chatterbox instance, loading tasks from the specified file path.
+     * If loading fails, starts with an empty task list.
+     *
+     * @param filePath Path to the data file for storing tasks.
+     */
     public Chatterbox(String filePath) {
         ui = new Ui();
         storage = new Storage(filePath);
@@ -809,6 +979,10 @@ public class Chatterbox {
         }
     }
 
+    /**
+     * Runs the main command loop for the Chatterbox application.
+     * Handles user input, command execution, and program termination.
+     */
     public void run() {
         ui.showWelcome();
         boolean isExit = false;
@@ -830,6 +1004,11 @@ public class Chatterbox {
         ui.close();
     }
 
+    /**
+     * The main method to launch the Chatterbox application.
+     *
+     * @param args Command-line arguments (not used).
+     */
     public static void main(String[] args) {
         new Chatterbox("./data/chatterbox.txt").run();
     }
