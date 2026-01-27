@@ -32,8 +32,14 @@ application {
 }
 
 shadowJar {
-    archiveBaseName = "duke"
+    archiveBaseName = "chatterbox"
     archiveClassifier = null
+}
+// Ensure the jar manifest contains the main class for java -jar
+shadowJar {
+    manifest {
+        attributes 'Main-Class': 'Chatterbox.Chatterbox'
+    }
 }
 
 run{
