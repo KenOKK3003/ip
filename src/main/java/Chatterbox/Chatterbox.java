@@ -1,3 +1,4 @@
+package Chatterbox;
 // chatterbox_single_file.java
 import java.io.FileWriter;
 import java.io.IOException;
