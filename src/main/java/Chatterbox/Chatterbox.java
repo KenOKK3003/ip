@@ -255,6 +255,23 @@ class Event extends Task {
  * Provides methods to add, remove, retrieve, and search for tasks.
  */
 class TaskList {
+
+        /**
+         * Finds tasks whose description contains the given keyword (case-insensitive).
+         *
+         * @param keyword The keyword to search for.
+         * @return List of matching tasks.
+         */
+        public ArrayList<Task> findTasksByKeyword(String keyword) {
+            ArrayList<Task> result = new ArrayList<>();
+            String lowerKeyword = keyword.toLowerCase();
+            for (Task task : tasks) {
+                if (task.getDescription().toLowerCase().contains(lowerKeyword)) {
+                    result.add(task);
+                }
+            }
+            return result;
+        }
     private ArrayList<Task> tasks;
     
     /**
@@ -374,6 +391,35 @@ class TaskList {
 }
 
 class Ui {
+
+        /**
+         * Shows the list of tasks that match a keyword search.
+         *
+         * @param tasks List of matching tasks.
+         * @param keyword The keyword used for searching.
+         */
+        public void showMatchingTasks(ArrayList<Task> foundTasks, TaskList fullTaskList, String keyword) {
+            System.out.println(" Here are the matching tasks in your list:");
+            if (foundTasks.isEmpty()) {
+                System.out.println(" No matching tasks found.");
+            } else {
+                ArrayList<Task> allTasks = fullTaskList.getAllTasks();
+                for (Task foundTask : foundTasks) {
+                    int originalIndex = -1;
+                    for (int i = 0; i < allTasks.size(); i++) {
+                        if (allTasks.get(i) == foundTask) {
+                            originalIndex = i;
+                            break;
+                        }
+                    }
+                    if (originalIndex != -1) {
+                        System.out.println(" " + (originalIndex + 1) + "." + foundTask);
+                    } else {
+                        System.out.println(" ?." + foundTask); // fallback if not found
+                    }
+                }
+            }
+        }
     private static final String LINE = "________________________________";
     private Scanner scanner;
     
@@ -778,37 +824,52 @@ class Parser {
         switch (commandWord) {
         case "bye":
             return new ExitCommand();
-            
         case "list":
             return new ListCommand();
-            
         case "mark":
             return parseMarkCommand(arguments, true);
-            
         case "unmark":
             return parseMarkCommand(arguments, false);
-            
         case "delete":
             return parseDeleteCommand(arguments);
-            
         case "todo":
             return parseTodoCommand(arguments);
-            
         case "deadline":
             return parseDeadlineCommand(arguments);
-            
         case "event":
             return parseEventCommand(arguments);
-            
         case "finddate":
             return parseFindDateCommand(arguments);
-            
+        case "find":
+            return parseFindCommand(arguments);
         default:
             throw new ChatterboxException(
                 "Hmm, I don't recognize that command! " +
-                "Try 'todo', 'deadline', 'event', 'list', or 'finddate'!");
+                "Try 'todo', 'deadline', 'event', 'list', 'find', or 'finddate'!");
+        }
+
+    }
+
+    private Command parseFindCommand(String arguments) throws ChatterboxException {
+        if (arguments.trim().isEmpty()) {
+            throw new ChatterboxException("Please specify a keyword to search for.");
+        }
+        return new FindCommand(arguments.trim());
+    }
+    static class FindCommand extends Command {
+        private String keyword;
+
+        public FindCommand(String keyword) {
+            this.keyword = keyword;
+        }
+
+        @Override
+        public void execute(TaskList tasks, Ui ui, Storage storage) {
+            ArrayList<Task> foundTasks = tasks.findTasksByKeyword(keyword);
+            ui.showMatchingTasks(foundTasks, tasks, keyword);
         }
     }
+
     
     private Command parseMarkCommand(String arguments, boolean isDone) throws ChatterboxException {
         if (arguments.trim().isEmpty()) {
