@@ -11,7 +11,6 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-// ==================== ChatterboxException ====================
 class ChatterboxException extends Exception {
     public ChatterboxException(String message) {
         super(message);
@@ -374,7 +373,6 @@ class TaskList {
     }
 }
 
-// ==================== Ui ====================
 class Ui {
     private static final String LINE = "________________________________";
     private Scanner scanner;
