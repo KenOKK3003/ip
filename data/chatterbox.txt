@@ -6,3 +6,4 @@ D | 0 | testdead2 | 2019-12-02 1620
 T | 0 | Run
 D | 0 | testting | 2011-02-12 1600
 T | 0 | run
+T | 0 | hello
