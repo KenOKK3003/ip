@@ -11,14 +11,12 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-// ==================== ChatterboxException ====================
 class ChatterboxException extends Exception {
     public ChatterboxException(String message) {
         super(message);
     }
 }
 
-// ==================== Task Classes ====================
 abstract class Task {
     enum TaskType {
         TODO("T"),
@@ -195,7 +193,6 @@ class Event extends Task {
     }
 }
 
-// ==================== TaskList ====================
 class TaskList {
     private ArrayList<Task> tasks;
     
@@ -265,7 +262,6 @@ class TaskList {
     }
 }
 
-// ==================== Ui ====================
 class Ui {
     private static final String LINE = "________________________________";
     private Scanner scanner;
@@ -345,7 +341,6 @@ class Ui {
     }
 }
 
-// ==================== Storage ====================
 class Storage {
     private String filePath;
     private static final DateTimeFormatter FILE_DATE_FORMATTER = 
@@ -471,7 +466,6 @@ class Storage {
     }
 }
 
-// ==================== Command Classes ====================
 abstract class Command {
     public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws ChatterboxException;
     public boolean isExit() {
@@ -601,7 +595,6 @@ class FindDateCommand extends Command {
     }
 }
 
-// ==================== Parser ====================
 class Parser {
     private static final DateTimeFormatter INPUT_DATE_FORMATTER = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
@@ -789,7 +782,6 @@ class Parser {
     }
 }
 
-// ==================== Main Chatterbox Class ====================
 public class Chatterbox {
     private Storage storage;
     private TaskList tasks;
