@@ -8,3 +8,4 @@ D | 0 | testting | 2011-02-12 1600
 T | 0 | run
 T | 1 | hello
 T | 1 | dustbin
+T | 1 | GUItest1

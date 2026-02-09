@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
 }
 
 repositories {
@@ -11,6 +12,11 @@ repositories {
 dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.0'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.10.0'
+}
+
+javafx {
+    version = '17.0.9'
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
 
 test {
@@ -28,7 +34,7 @@ test {
 }
 
 application {
-    mainClass.set("Chatterbox.Chatterbox")
+    mainClass.set("Launcher")
 }
 
 shadowJar {
@@ -38,7 +44,7 @@ shadowJar {
 // Ensure the jar manifest contains the main class for java -jar
 shadowJar {
     manifest {
-        attributes 'Main-Class': 'Chatterbox.Chatterbox'
+        attributes 'Main-Class': 'Launcher'
     }
 }
 

@@ -498,6 +498,119 @@ class Ui {
     }
 }
 
+class GuiUi extends Ui {
+    private static final String NEW_LINE = System.lineSeparator();
+    private final StringBuilder output = new StringBuilder();
+
+    private void appendLine(String line) {
+        output.append(line).append(NEW_LINE);
+    }
+
+    public void clear() {
+        output.setLength(0);
+    }
+
+    public String consumeOutput() {
+        String result = output.toString().stripTrailing();
+        clear();
+        return result;
+    }
+
+    @Override
+    public void showWelcome() {
+        appendLine(" Hello! I'm Chatterbox");
+        appendLine(" What can I do for you?");
+    }
+
+    @Override
+    public void showGoodbye() {
+        appendLine(" Bye! Hope to see you again soon!");
+    }
+
+    @Override
+    public void showLine() {
+        // No-op for GUI output
+    }
+
+    @Override
+    public void showError(String message) {
+        appendLine(" OOPS!!! " + message);
+    }
+
+    @Override
+    public void showLoadingError(String message) {
+        appendLine("Error loading tasks: " + message);
+    }
+
+    @Override
+    public void showTaskAdded(Task task, int totalTasks) {
+        appendLine(" Got it. I've added this task:");
+        appendLine("   " + task);
+        appendLine(" Now you have " + totalTasks + " tasks in the list.");
+    }
+
+    @Override
+    public void showTaskRemoved(Task task, int totalTasks) {
+        appendLine(" Noted. I've removed this task:");
+        appendLine("   " + task);
+        appendLine(" Now you have " + totalTasks + " tasks in the list.");
+    }
+
+    @Override
+    public void showTaskMarked(Task task, boolean isDone) {
+        if (isDone) {
+            appendLine(" Nice! Congrats on finishing this task!");
+        } else {
+            appendLine(" OK, I've forgotten about it already!");
+        }
+        appendLine("   " + task);
+    }
+
+    @Override
+    public void showTaskList(ArrayList<Task> tasks) {
+        appendLine(" Here are the tasks in your list:");
+        for (int i = 0; i < tasks.size(); i++) {
+            appendLine(" " + (i + 1) + "." + tasks.get(i));
+        }
+    }
+
+    @Override
+    public void showTasksOnDate(ArrayList<Task> tasks, String date) {
+        appendLine(" Tasks on " + date + ":");
+        if (tasks.isEmpty()) {
+            appendLine(" No tasks found for this date.");
+        } else {
+            for (int i = 0; i < tasks.size(); i++) {
+                appendLine(" " + (i + 1) + "." + tasks.get(i));
+            }
+        }
+    }
+
+    @Override
+    public void showMatchingTasks(ArrayList<Task> foundTasks, TaskList fullTaskList, String keyword) {
+        appendLine(" Here are the matching tasks in your list:");
+        if (foundTasks.isEmpty()) {
+            appendLine(" No matching tasks found.");
+        } else {
+            ArrayList<Task> allTasks = fullTaskList.getAllTasks();
+            for (Task foundTask : foundTasks) {
+                int originalIndex = -1;
+                for (int i = 0; i < allTasks.size(); i++) {
+                    if (allTasks.get(i) == foundTask) {
+                        originalIndex = i;
+                        break;
+                    }
+                }
+                if (originalIndex != -1) {
+                    appendLine(" " + (originalIndex + 1) + "." + foundTask);
+                } else {
+                    appendLine(" ?." + foundTask);
+                }
+            }
+        }
+    }
+}
+
 // ==================== Storage ====================
 /**
  * Handles loading and saving of tasks to and from a file for the Chatterbox application.
@@ -1018,6 +1131,9 @@ public class Chatterbox {
     private TaskList tasks;
     private Ui ui;
     private Parser parser;
+    private GuiUi guiUi;
+    private String lastCommandType = "default";
+    private boolean lastIsExit = false;
 
     /**
      * Constructs a Chatterbox instance, loading tasks from the specified file path.
@@ -1027,6 +1143,7 @@ public class Chatterbox {
      */
     public Chatterbox(String filePath) {
         ui = new Ui();
+        guiUi = new GuiUi();
         storage = new Storage(filePath);
         parser = new Parser();
         
@@ -1061,6 +1178,57 @@ public class Chatterbox {
         }
         
         ui.close();
+    }
+
+    /**
+     * Returns a response for the GUI based on the user's input.
+     */
+    public String getResponse(String input) {
+        guiUi.clear();
+        try {
+            Command command = parser.parseCommand(input);
+            lastCommandType = mapCommandType(command);
+            lastIsExit = command.isExit();
+            command.execute(tasks, guiUi, storage);
+            return guiUi.consumeOutput();
+        } catch (ChatterboxException e) {
+            lastCommandType = "default";
+            lastIsExit = false;
+            guiUi.showError(e.getMessage());
+            return guiUi.consumeOutput();
+        }
+    }
+
+    /**
+     * Returns a welcome message for the GUI.
+     */
+    public String getWelcomeMessage() {
+        guiUi.clear();
+        guiUi.showWelcome();
+        return guiUi.consumeOutput();
+    }
+
+    public String getCommandType() {
+        return lastCommandType;
+    }
+
+    public boolean isExit() {
+        return lastIsExit;
+    }
+
+    private String mapCommandType(Command command) {
+        if (command instanceof AddTodoCommand
+                || command instanceof AddDeadlineCommand
+                || command instanceof AddEventCommand) {
+            return "AddCommand";
+        }
+        if (command instanceof MarkCommand) {
+            return "ChangeMarkCommand";
+        }
+        if (command instanceof DeleteCommand) {
+            return "DeleteCommand";
+        }
+        return "default";
     }
 
     /**
