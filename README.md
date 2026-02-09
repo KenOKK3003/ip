@@ -28,6 +28,9 @@ delete X: deletes task X from saved list
 ## Feature: Permanent memory (Level 7)
 The chatbot will save your list in storage, allowing it to remember your list of tasks between sessions!
 
+## Feature: GUI (Level 10)
+Added a cool new GUI for Chatterbox!
+
 
 ## Feature: Search tasks by date
 The chatbot allows you to search which deadline tasks are due on a specified date using the "finddate" command!
