@@ -23,6 +23,8 @@ public class DialogBox extends HBox {
     private ImageView displayPicture;
 
     private DialogBox(String text, Image img) {
+        assert text != null : "Dialog text must not be null";
+        assert img != null : "Dialog image must not be null";
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(MainWindow.class.getResource("/View/DialogueBox.fxml"));
             fxmlLoader.setController(this);
@@ -32,6 +34,8 @@ public class DialogBox extends HBox {
             e.printStackTrace();
         }
 
+        assert dialog != null : "Dialog label must be injected from FXML";
+        assert displayPicture != null : "Display picture must be injected from FXML";
         dialog.setText(text);
         displayPicture.setImage(img);
     }
@@ -40,6 +44,7 @@ public class DialogBox extends HBox {
      * Flips the dialog box such that the ImageView is on the left and text on the right.
      */
     private void flip() {
+        assert dialog != null : "Dialog label must be available before flipping";
         ObservableList<Node> tmp = FXCollections.observableArrayList(this.getChildren());
         Collections.reverse(tmp);
         getChildren().setAll(tmp);
@@ -59,6 +64,7 @@ public class DialogBox extends HBox {
     }
 
     private void changeDialogStyle(String commandType) {
+        assert commandType != null : "Command type must not be null";
         switch(commandType) {
         case "AddCommand":
             dialog.getStyleClass().add("add-label");

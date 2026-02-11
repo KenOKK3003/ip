@@ -9,3 +9,4 @@ T | 0 | run
 T | 1 | hello
 T | 1 | dustbin
 T | 1 | GUItest1
+T | 0 | list

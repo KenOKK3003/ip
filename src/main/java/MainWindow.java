@@ -27,11 +27,14 @@ public class MainWindow extends AnchorPane {
 
     @FXML
     public void initialize() {
+        assert scrollPane != null : "ScrollPane must be injected from FXML";
+        assert dialogContainer != null : "Dialog container must be injected from FXML";
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
     }
 
     /** Injects the Chatterbox instance */
     public void setChatterbox(Chatterbox cb) {
+        assert cb != null : "Chatterbox instance must be provided";
         chatterbox = cb;
         dialogContainer.getChildren().addAll(
                 DialogBox.getDukeDialog(chatterbox.getWelcomeMessage(), dukeImage)
@@ -44,8 +47,12 @@ public class MainWindow extends AnchorPane {
      */
     @FXML
     private void handleUserInput() {
+        assert chatterbox != null : "Chatterbox must be set before handling user input";
+        assert userInput != null : "User input field must be injected from FXML";
         String input = userInput.getText();
+        assert input != null : "User input text should not be null";
         String response = chatterbox.getResponse(input);
+        assert response != null : "Chatterbox response should not be null";
         System.out.println("User input: " + input);
         System.out.println("Chatterbox response: " + response);
         dialogContainer.getChildren().addAll(
