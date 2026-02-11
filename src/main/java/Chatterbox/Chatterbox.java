@@ -287,6 +287,7 @@ class TaskList {
      * @param tasks List of tasks to initialise the TaskList with.
      */
     public TaskList(ArrayList<Task> tasks) {
+        assert tasks != null : "Task list must not be null";
         this.tasks = tasks;
     }
     
@@ -296,6 +297,7 @@ class TaskList {
      * @param task Task to be added.
      */
     public void addTask(Task task) {
+        assert task != null : "Task must not be null";
         tasks.add(task);
     }
     
@@ -627,6 +629,7 @@ class Storage {
      * @param filePath Path to the data file for storing tasks.
      */
     public Storage(String filePath) {
+        assert filePath != null && !filePath.isBlank() : "File path must not be blank";
         this.filePath = filePath;
     }
     
@@ -737,6 +740,7 @@ class Storage {
      * @throws ChatterboxException If an error occurs while saving tasks.
      */
     public void save(ArrayList<Task> tasks) throws ChatterboxException {
+        assert tasks != null : "Tasks list must not be null";
         try {
             Path dataFilePath = Paths.get(filePath);
             Path dataDirPath = dataFilePath.getParent();
@@ -926,6 +930,7 @@ class Parser {
      * @throws ChatterboxException If the input is invalid or unrecognised.
      */
     public Command parseCommand(String fullCommand) throws ChatterboxException {
+        assert fullCommand != null : "Command input must not be null";
         if (fullCommand.trim().isEmpty()) {
             throw new ChatterboxException("Please enter a command.");
         }
@@ -964,6 +969,7 @@ class Parser {
     }
 
     private Command parseFindCommand(String arguments) throws ChatterboxException {
+        assert arguments != null : "Find arguments must not be null";
         if (arguments.trim().isEmpty()) {
             throw new ChatterboxException("Please specify a keyword to search for.");
         }
@@ -985,6 +991,7 @@ class Parser {
 
     
     private Command parseMarkCommand(String arguments, boolean isDone) throws ChatterboxException {
+        assert arguments != null : "Mark arguments must not be null";
         if (arguments.trim().isEmpty()) {
             throw new ChatterboxException("Please specify which task to " + 
                 (isDone ? "mark" : "unmark") + ".");
@@ -999,6 +1006,7 @@ class Parser {
     }
     
     private Command parseDeleteCommand(String arguments) throws ChatterboxException {
+        assert arguments != null : "Delete arguments must not be null";
         if (arguments.trim().isEmpty()) {
             throw new ChatterboxException("Please specify which task to delete.");
         }
@@ -1012,6 +1020,7 @@ class Parser {
     }
     
     private Command parseTodoCommand(String arguments) throws ChatterboxException {
+        assert arguments != null : "Todo arguments must not be null";
         if (arguments.trim().isEmpty()) {
             throw new ChatterboxException("The description of a todo cannot be empty.");
         }
@@ -1020,6 +1029,7 @@ class Parser {
     }
     
     private Command parseDeadlineCommand(String arguments) throws ChatterboxException {
+        assert arguments != null : "Deadline arguments must not be null";
         if (arguments.trim().isEmpty()) {
             throw new ChatterboxException("The description of a deadline cannot be empty.");
         }
@@ -1051,6 +1061,7 @@ class Parser {
     }
     
     private Command parseEventCommand(String arguments) throws ChatterboxException {
+        assert arguments != null : "Event arguments must not be null";
         if (arguments.trim().isEmpty()) {
             throw new ChatterboxException("The description of an event cannot be empty.");
         }
@@ -1094,6 +1105,7 @@ class Parser {
     }
     
     private Command parseFindDateCommand(String arguments) throws ChatterboxException {
+        assert arguments != null : "Find date arguments must not be null";
         if (arguments.trim().isEmpty()) {
             throw new ChatterboxException("Please specify a date (yyyy-MM-dd).");
         }
@@ -1142,6 +1154,7 @@ public class Chatterbox {
      * @param filePath Path to the data file for storing tasks.
      */
     public Chatterbox(String filePath) {
+        assert filePath != null && !filePath.isBlank() : "File path must not be blank";
         ui = new Ui();
         guiUi = new GuiUi();
         storage = new Storage(filePath);
@@ -1184,9 +1197,11 @@ public class Chatterbox {
      * Returns a response for the GUI based on the user's input.
      */
     public String getResponse(String input) {
+        assert input != null : "User input must not be null";
         guiUi.clear();
         try {
             Command command = parser.parseCommand(input);
+            assert command != null : "Parser must return a command";
             lastCommandType = mapCommandType(command);
             lastIsExit = command.isExit();
             command.execute(tasks, guiUi, storage);
@@ -1217,6 +1232,7 @@ public class Chatterbox {
     }
 
     private String mapCommandType(Command command) {
+        assert command != null : "Command must not be null";
         if (command instanceof AddTodoCommand
                 || command instanceof AddDeadlineCommand
                 || command instanceof AddEventCommand) {

@@ -16,6 +16,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
+        assert stage != null : "Stage must be provided by JavaFX runtime";
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("/View/MainWindow.fxml"));
             AnchorPane ap = fxmlLoader.load();
@@ -24,7 +25,9 @@ public class Main extends Application {
             stage.setMinHeight(220);
             stage.setMinWidth(417);
             stage.setMaxWidth(417);
-            fxmlLoader.<MainWindow>getController().setChatterbox(chatterbox);
+            MainWindow controller = fxmlLoader.getController();
+            assert controller != null : "MainWindow controller must be available";
+            controller.setChatterbox(chatterbox);
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
