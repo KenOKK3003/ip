@@ -9,9 +9,10 @@ Welcome to Chatterbox! Your friendly task management assistant that helps you ke
 
 **What you need:**
 - Java 17 or above installed on your system
+- For Mac users, download this specific [version](https://www.azul.com/downloads/?version=java-17-lts&os=macos&package=jdk-fx#zulu)
 
 **Installation steps:**
-1. Grab the latest `chatterbox.jar` (v0.2) from the releases page
+1. Grab the latest `chatterbox.jar` (v0.2) from [here](https://github.com/KenOKK3003/ip/releases/tag/A-Release)
 2. Place it in any folder of your choice
 3. Navigate to that folder in your terminal
 4. Launch with: `java -jar chatterbox.jar`
@@ -22,7 +23,7 @@ Welcome to Chatterbox! Your friendly task management assistant that helps you ke
 
 Before diving in, here are some conventions used throughout this guide:
 
-> **`PLACEHOLDER_TEXT`** indicates values you should replace with your own input.  
+> **`CAPITALISED_TEXT`** indicates values you should replace with your own input.  
 > For instance, `todo TASK_NAME` means you'd type something like `todo Buy milk`.
 
 > **Date/Time Format:** Always use `yyyy-MM-dd HHmm` format (24-hour clock).  
@@ -186,6 +187,9 @@ Your data is already saved, so just type `bye` and you're good to go!
 ---
 
 ## Data Management
+
+**Conflict Detection**
+If a newly added event overlaps with existing dates, chatterbox will give a warning.
 
 **Automatic Saving**  
 Every change you make gets saved instantly to `data/chatterbox.txt` in the same folder as your JAR file. No manual saving needed!
