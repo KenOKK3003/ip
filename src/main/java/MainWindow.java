@@ -6,10 +6,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
-import Chatterbox.Chatterbox;
-/**
- * Controller for the main GUI.
- */
+import chatterbox.Chatterbox;
+
 public class MainWindow extends AnchorPane {
     @FXML
     private ScrollPane scrollPane;
@@ -41,7 +39,7 @@ public class MainWindow extends AnchorPane {
         );
     }
 
-    /**
+    /*
      * Creates two dialog boxes, one echoing user input and the other containing Duke's reply and then appends them to
      * the dialog container. Clears the user input after processing.
      */

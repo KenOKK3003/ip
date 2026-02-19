@@ -5,11 +5,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-import Chatterbox.Chatterbox;
+import chatterbox.Chatterbox;
 
-/**
- * A GUI for Duke using FXML.
- */
 public class Main extends Application {
 
     private Chatterbox chatterbox = new Chatterbox("./data/chatterbox.txt");

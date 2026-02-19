@@ -1,5 +1,4 @@
-package Chatterbox;
-// chatterbox_single_file.java
+package chatterbox;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -512,13 +511,25 @@ class Ui {
         }
     }
     
-    public void showTasksOnDate(ArrayList<Task> tasks, String date) {
+    public void showTasksOnDate(ArrayList<Task> foundTasks, TaskList fullTaskList, String date) {
         System.out.println(" Tasks on " + date + ":");
-        if (tasks.isEmpty()) {
+        if (foundTasks.isEmpty()) {
             System.out.println(" No tasks found for this date.");
         } else {
-            for (int i = 0; i < tasks.size(); i++) {
-                System.out.println(" " + (i + 1) + "." + tasks.get(i));
+            ArrayList<Task> allTasks = fullTaskList.getAllTasks();
+            for (Task foundTask : foundTasks) {
+                int originalIndex = -1;
+                for (int i = 0; i < allTasks.size(); i++) {
+                    if (allTasks.get(i) == foundTask) {
+                        originalIndex = i;
+                        break;
+                    }
+                }
+                if (originalIndex != -1) {
+                    System.out.println(" " + (originalIndex + 1) + "." + foundTask);
+                } else {
+                    System.out.println(" ?." + foundTask);
+                }
             }
         }
     }
@@ -613,13 +624,25 @@ class GuiUi extends Ui {
     }
 
     @Override
-    public void showTasksOnDate(ArrayList<Task> tasks, String date) {
+    public void showTasksOnDate(ArrayList<Task> foundTasks, TaskList fullTaskList, String date) {
         appendLine(" Tasks on " + date + ":");
-        if (tasks.isEmpty()) {
+        if (foundTasks.isEmpty()) {
             appendLine(" No tasks found for this date.");
         } else {
-            for (int i = 0; i < tasks.size(); i++) {
-                appendLine(" " + (i + 1) + "." + tasks.get(i));
+            ArrayList<Task> allTasks = fullTaskList.getAllTasks();
+            for (Task foundTask : foundTasks) {
+                int originalIndex = -1;
+                for (int i = 0; i < allTasks.size(); i++) {
+                    if (allTasks.get(i) == foundTask) {
+                        originalIndex = i;
+                        break;
+                    }
+                }
+                if (originalIndex != -1) {
+                    appendLine(" " + (originalIndex + 1) + "." + foundTask);
+                } else {
+                    appendLine(" ?." + foundTask);
+                }
             }
         }
     }
@@ -986,7 +1009,7 @@ class FindDateCommand extends Command {
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         ArrayList<Task> foundTasks = tasks.findTasksOnDate(date);
-        ui.showTasksOnDate(foundTasks, date.format(DATE_ONLY_FORMATTER));
+        ui.showTasksOnDate(foundTasks, tasks, date.format(DATE_ONLY_FORMATTER));
     }
 }
 
