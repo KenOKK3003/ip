@@ -1,10 +1,1 @@
-T | 0 | test 4
-D | 0 | testdead | 2019-12-02 1600
-D | 0 | testdead2 | 2019-12-02 1620
-T | 0 | Run
-D | 0 | testting | 2011-02-12 1600
-T | 0 | run
-T | 1 | hello
-T | 1 | dustbin
-T | 1 | GUItest1
-T | 0 | list
+T | 0 | test 1

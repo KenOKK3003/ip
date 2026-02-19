@@ -1,21 +1,33 @@
 todo read book
 todo return book
-list
-deadline submit assignment /by Sunday
-event project meeting /from Mon 2pm /to 4pm
+deadline submit assignment /by 2024-03-15 1800
+deadline finish report /by 2024-03-20
+event project meeting /from 2024-03-16 1400 /to 2024-03-16 1600
+event workshop /from 2024-03-18 /to 2024-03-19
 list
 mark 1
+mark 3
 list
 unmark 1
 list
-delete 3
+find book
+find assignment
+find nothing
+finddate 2024-03-16
+finddate 2024-03-18
+delete 2
 list
 todo
-blah
 deadline
+deadline test
 event
+event test /from 2024-03-20
+event test2 /from 2024-03-20 1400 /to 2024-03-20 1200
 mark
-unmark
+unmark abc
 delete
 delete 999
+finddate
+finddate invalid-date
+blah
 bye

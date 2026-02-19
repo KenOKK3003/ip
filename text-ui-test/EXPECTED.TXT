@@ -3,47 +3,60 @@ ________________________________
  What can I do for you?
 ________________________________
 ________________________________
- Got it. I'll make sure you won't forget this task!
+ Got it. I've added this task:
    [T][ ] read book
  Now you have 1 tasks in the list.
 ________________________________
 ________________________________
- Got it. I'll make sure you won't forget this task!
+ Got it. I've added this task:
    [T][ ] return book
  Now you have 2 tasks in the list.
 ________________________________
 ________________________________
- Here are the tasks in your list:
- 1.[T][ ] read book
- 2.[T][ ] return book
-________________________________
-________________________________
- Got it. Remember to complete this task on time!
-   [D][ ] submit assignment (by: Sunday)
+ Got it. I've added this task:
+   [D][ ] submit assignment (by: Mar 15 2024, 6:00 pm)
  Now you have 3 tasks in the list.
 ________________________________
 ________________________________
- Got it. Make sure to attend this event!
-   [E][ ] project meeting (from: Mon 2pm to: 4pm)
+ Got it. I've added this task:
+   [D][ ] finish report (by: Mar 20 2024, 12:00 am)
  Now you have 4 tasks in the list.
+________________________________
+________________________________
+ Got it. I've added this task:
+   [E][ ] project meeting (from: Mar 16 2024, 2:00 pm to: Mar 16 2024, 4:00 pm)
+ Now you have 5 tasks in the list.
+________________________________
+________________________________
+ Got it. I've added this task:
+   [E][ ] workshop (from: Mar 18 2024, 12:00 am to: Mar 19 2024, 12:00 am)
+ Now you have 6 tasks in the list.
 ________________________________
 ________________________________
  Here are the tasks in your list:
  1.[T][ ] read book
  2.[T][ ] return book
- 3.[D][ ] submit assignment (by: Sunday)
- 4.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+ 3.[D][ ] submit assignment (by: Mar 15 2024, 6:00 pm)
+ 4.[D][ ] finish report (by: Mar 20 2024, 12:00 am)
+ 5.[E][ ] project meeting (from: Mar 16 2024, 2:00 pm to: Mar 16 2024, 4:00 pm)
+ 6.[E][ ] workshop (from: Mar 18 2024, 12:00 am to: Mar 19 2024, 12:00 am)
 ________________________________
 ________________________________
  Nice! Congrats on finishing this task!
    [T][X] read book
 ________________________________
 ________________________________
+ Nice! Congrats on finishing this task!
+   [D][X] submit assignment (by: Mar 15 2024, 6:00 pm)
+________________________________
+________________________________
  Here are the tasks in your list:
  1.[T][X] read book
  2.[T][ ] return book
- 3.[D][ ] submit assignment (by: Sunday)
- 4.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+ 3.[D][X] submit assignment (by: Mar 15 2024, 6:00 pm)
+ 4.[D][ ] finish report (by: Mar 20 2024, 12:00 am)
+ 5.[E][ ] project meeting (from: Mar 16 2024, 2:00 pm to: Mar 16 2024, 4:00 pm)
+ 6.[E][ ] workshop (from: Mar 18 2024, 12:00 am to: Mar 19 2024, 12:00 am)
 ________________________________
 ________________________________
  OK, I've forgotten about it already!
@@ -53,43 +66,83 @@ ________________________________
  Here are the tasks in your list:
  1.[T][ ] read book
  2.[T][ ] return book
- 3.[D][ ] submit assignment (by: Sunday)
- 4.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+ 3.[D][X] submit assignment (by: Mar 15 2024, 6:00 pm)
+ 4.[D][ ] finish report (by: Mar 20 2024, 12:00 am)
+ 5.[E][ ] project meeting (from: Mar 16 2024, 2:00 pm to: Mar 16 2024, 4:00 pm)
+ 6.[E][ ] workshop (from: Mar 18 2024, 12:00 am to: Mar 19 2024, 12:00 am)
+________________________________
+________________________________
+ Here are the matching tasks in your list:
+ 1.[T][ ] read book
+ 2.[T][ ] return book
+________________________________
+________________________________
+ Here are the matching tasks in your list:
+ 3.[D][X] submit assignment (by: Mar 15 2024, 6:00 pm)
+________________________________
+________________________________
+ Here are the matching tasks in your list:
+ No matching tasks found.
+________________________________
+________________________________
+ Tasks on 2024-03-16:
+ 1.[E][ ] project meeting (from: Mar 16 2024, 2:00 pm to: Mar 16 2024, 4:00 pm)
+________________________________
+________________________________
+ Tasks on 2024-03-18:
+ 1.[E][ ] workshop (from: Mar 18 2024, 12:00 am to: Mar 19 2024, 12:00 am)
 ________________________________
 ________________________________
  Noted. I've removed this task:
-   [D][ ] submit assignment (by: Sunday)
- Now you have 3 tasks in the list.
+   [T][ ] return book
+ Now you have 5 tasks in the list.
 ________________________________
 ________________________________
  Here are the tasks in your list:
  1.[T][ ] read book
- 2.[T][ ] return book
- 3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+ 2.[D][X] submit assignment (by: Mar 15 2024, 6:00 pm)
+ 3.[D][ ] finish report (by: Mar 20 2024, 12:00 am)
+ 4.[E][ ] project meeting (from: Mar 16 2024, 2:00 pm to: Mar 16 2024, 4:00 pm)
+ 5.[E][ ] workshop (from: Mar 18 2024, 12:00 am to: Mar 19 2024, 12:00 am)
 ________________________________
 ________________________________
  OOPS!!! The description of a todo cannot be empty.
 ________________________________
 ________________________________
- Hmm, I don't recognize that command! Try 'todo', 'deadline', 'event', or 'list'!
-________________________________
-________________________________
  OOPS!!! The description of a deadline cannot be empty.
+________________________________
+________________________________
+ OOPS!!! Please specify the deadline with /by
 ________________________________
 ________________________________
  OOPS!!! The description of an event cannot be empty.
 ________________________________
 ________________________________
+ OOPS!!! Please specify the event time with /from and /to
+________________________________
+________________________________
+ OOPS!!! The 'to' time must be after the 'from' time.
+________________________________
+________________________________
  OOPS!!! Please specify which task to mark.
 ________________________________
 ________________________________
- OOPS!!! Please specify which task to unmark.
+ OOPS!!! Please provide a valid task number.
 ________________________________
 ________________________________
  OOPS!!! Please specify which task to delete.
 ________________________________
 ________________________________
  OOPS!!! Task number 999 does not exist.
+________________________________
+________________________________
+ OOPS!!! Please specify a date (yyyy-MM-dd).
+________________________________
+________________________________
+ OOPS!!! Invalid date format. Please use yyyy-MM-dd (e.g., 2019-12-02)
+________________________________
+________________________________
+ OOPS!!! Hmm, I don't recognize that command! Try 'todo', 'deadline', 'event', 'list', 'find', or 'finddate'!
 ________________________________
 ________________________________
  Bye! Hope to see you again soon!
