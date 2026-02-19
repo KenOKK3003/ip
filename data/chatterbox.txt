@@ -1,5 +1,3 @@
-T | 1 | test
-T | 0 | test3
 T | 0 | test 4
 D | 0 | testdead | 2019-12-02 1600
 D | 0 | testdead2 | 2019-12-02 1620

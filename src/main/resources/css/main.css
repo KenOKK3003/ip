@@ -3,6 +3,17 @@
     -fx-background-color: main-color;
 }
 
+#scrollPane {
+    -fx-background-image: url('/images/background.png');
+    -fx-background-size: cover;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
+#scrollPane .viewport {
+    -fx-background-color: transparent;
+}
+
 .text-field {
     -fx-background-color: #d9ffe2;
     -fx-font: 20px "Arial";
