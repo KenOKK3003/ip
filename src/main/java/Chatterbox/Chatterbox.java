@@ -634,6 +634,40 @@ class Storage {
     }
     
     /**
+     * Checks if the data file exists.
+     *
+     * @return True if the file exists, false otherwise.
+     */
+    public boolean fileExists() {
+        Path dataFilePath = Paths.get(filePath);
+        return Files.exists(dataFilePath);
+    }
+    
+    /**
+     * Creates the data file and its parent directory if they don't exist.
+     *
+     * @throws ChatterboxException If an error occurs while creating the file.
+     */
+    public void createFile() throws ChatterboxException {
+        try {
+            Path dataFilePath = Paths.get(filePath);
+            Path dataDirPath = dataFilePath.getParent();
+            
+            // Create data directory if it doesn't exist
+            if (dataDirPath != null && !Files.exists(dataDirPath)) {
+                Files.createDirectories(dataDirPath);
+            }
+            
+            // Create data file if it doesn't exist
+            if (!Files.exists(dataFilePath)) {
+                Files.createFile(dataFilePath);
+            }
+        } catch (IOException e) {
+            throw new ChatterboxException("Error creating file: " + e.getMessage());
+        }
+    }
+    
+    /**
      * Loads tasks from the data file.
      * Creates the file and its parent directory if they do not exist.
      *
@@ -803,7 +837,12 @@ class ExitCommand extends Command {
 
 class ListCommand extends Command {
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
+    public void execute(TaskList tasks, Ui ui, Storage storage) throws ChatterboxException {
+        if (!storage.fileExists()) {
+            ui.showError("Hey, my memory file seems to not exist! Let me create one and you can re-enter your command!");
+            storage.createFile();
+            return;
+        }
         ui.showTaskList(tasks.getAllTasks());
     }
 }
