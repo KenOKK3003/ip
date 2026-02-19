@@ -9,10 +9,21 @@ import org.junit.jupiter.api.Test;
 public class TaskTest {
 
     @Test
+    public void taskType_fromString_invalid_throws() {
+        assertThrows(IllegalArgumentException.class, () -> Task.TaskType.fromString("X"));
+    }
+
+    @Test
     public void todo_toFileFormat_and_toString() {
         ToDo t = new ToDo("read book", false);
         assertTrue(t.toFileFormat().startsWith("T | 0 | read book"));
         assertTrue(t.toString().contains("read book"));
+        assertNull(t.getDateTime());
+
+        t.markAsDone();
+        assertTrue(t.getStatusIcon().contains("X"));
+        t.markAsNotDone();
+        assertTrue(t.getStatusIcon().contains("[ ]"));
     }
 
     @Test
@@ -23,6 +34,7 @@ public class TaskTest {
         assertTrue(file.startsWith("D | 1 | return book | "));
         assertTrue(d.toString().contains("return book"));
         assertEquals(by, d.getBy());
+        assertEquals(by, d.getDateTime());
     }
 
     @Test
@@ -35,5 +47,6 @@ public class TaskTest {
         assertTrue(e.toString().contains("project meeting"));
         assertEquals(from, e.getFrom());
         assertEquals(to, e.getTo());
+        assertEquals(from, e.getDateTime());
     }
 }
