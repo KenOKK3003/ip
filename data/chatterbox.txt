@@ -1,2 +1,8 @@
 D | 0 | read a book | 2026-02-20 1800
 E | 1 | 2103 homework | 2026-12-21 1400 | 2026-12-21 1500
+T | 0 | buy milk
+T | 0 | buy milk by tomorrow
+T | 0 | buy milk by deadline / by 2026-02-20
+D | 0 | Buy Milk | 2026-02-20 0000
+D | 0 | test1 | 2026-12-21 1401
+E | 0 | test2 | 2026-12-21 1402 | 2026-12-21 1403

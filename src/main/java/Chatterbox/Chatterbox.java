@@ -364,6 +364,27 @@ class TaskList {
     }
     
     /**
+     * Checks if a new event clashes with any existing events.
+     *
+     * @param newFrom Start time of the new event.
+     * @param newTo End time of the new event.
+     * @return List of clashing events, empty if no clashes.
+     */
+    public ArrayList<Task> findClashingEvents(LocalDateTime newFrom, LocalDateTime newTo) {
+        ArrayList<Task> clashes = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task instanceof Event) {
+                Event event = (Event) task;
+                // Check if time ranges overlap
+                if (newFrom.isBefore(event.getTo()) && newTo.isAfter(event.getFrom())) {
+                    clashes.add(task);
+                }
+            }
+        }
+        return clashes;
+    }
+    
+    /**
      * Returns a list of tasks that occur on the specified date.
      *
      * @param date Date to search for tasks.
@@ -462,6 +483,13 @@ class Ui {
         System.out.println(" Now you have " + totalTasks + " tasks in the list.");
     }
     
+    public void showScheduleClash(ArrayList<Task> clashingTasks) {
+        System.out.println(" Warning: This event clashes with:");
+        for (Task task : clashingTasks) {
+            System.out.println("   - " + task);
+        }
+    }
+    
     public void showTaskRemoved(Task task, int totalTasks) {
         System.out.println(" Noted. I've removed this task:");
         System.out.println("   " + task);
@@ -549,6 +577,14 @@ class GuiUi extends Ui {
         appendLine(" Got it. I've added this task:");
         appendLine("   " + task);
         appendLine(" Now you have " + totalTasks + " tasks in the list.");
+    }
+    
+    @Override
+    public void showScheduleClash(ArrayList<Task> clashingTasks) {
+        appendLine(" Warning: This event clashes with:");
+        for (Task task : clashingTasks) {
+            appendLine("   - " + task);
+        }
     }
 
     @Override
@@ -927,9 +963,13 @@ class AddEventCommand extends Command {
     
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws ChatterboxException {
+        ArrayList<Task> clashes = tasks.findClashingEvents(from, to);
         Task newTask = new Event(description, from, to);
         tasks.addTask(newTask);
         ui.showTaskAdded(newTask, tasks.size());
+        if (!clashes.isEmpty()) {
+            ui.showScheduleClash(clashes);
+        }
         storage.save(tasks.getAllTasks());
     }
 }
