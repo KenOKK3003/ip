@@ -11,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
 
 /**
  * Represents a dialog box consisting of an ImageView to represent the speaker's face
@@ -38,6 +39,10 @@ public class DialogBox extends HBox {
         assert displayPicture != null : "Display picture must be injected from FXML";
         dialog.setText(text);
         displayPicture.setImage(img);
+        
+        // Make profile picture circular
+        Circle clip = new Circle(20, 20, 20);
+        displayPicture.setClip(clip);
     }
 
     /**
