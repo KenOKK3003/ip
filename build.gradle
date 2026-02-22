@@ -18,6 +18,20 @@ java {
 dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.0'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.10.0'
+    implementation "org.openjfx:javafx-controls:17.0.9"
+    implementation "org.openjfx:javafx-fxml:17.0.9"
+
+    runtimeOnly "org.openjfx:javafx-controls:17.0.9:win"
+    runtimeOnly "org.openjfx:javafx-controls:17.0.9:linux"
+    runtimeOnly "org.openjfx:javafx-controls:17.0.9:mac"
+
+    runtimeOnly "org.openjfx:javafx-graphics:17.0.9:win"
+    runtimeOnly "org.openjfx:javafx-graphics:17.0.9:linux"
+    runtimeOnly "org.openjfx:javafx-graphics:17.0.9:mac"
+
+    runtimeOnly "org.openjfx:javafx-base:17.0.9:win"
+    runtimeOnly "org.openjfx:javafx-base:17.0.9:linux"
+    runtimeOnly "org.openjfx:javafx-base:17.0.9:mac"
 }
 
 javafx {
