@@ -12,7 +12,7 @@ Welcome to Chatterbox! Your friendly task management assistant that helps you ke
 - For Mac users, download this specific [version](https://www.azul.com/downloads/?version=java-17-lts&os=macos&package=jdk-fx#zulu)
 
 **Installation steps:**
-1. Grab the latest `chatterbox.jar` (v1.0) from [here](https://github.com/KenOKK3003/ip/releases/tag/A-Release)
+1. Grab the latest `chatterbox.jar` (v1.1) from [here](https://github.com/KenOKK3003/ip/releases/tag/LinuxFix)
 2. Place it in any folder of your choice
 3. Navigate to that folder in your terminal
 4. Launch with: `java -jar chatterbox.jar`
